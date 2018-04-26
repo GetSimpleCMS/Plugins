@@ -1,0 +1,34 @@
+<?php
+$i18n = array(
+    'CHECKBOX' => "Check box"
+  , 'CUSTOMFIELDS_DESCR' => "Ce plugin vous permet de spécifier les champs personnalisés qui s'affichent lorsque vous modifiez une page."
+  , 'CUSTOMFIELDS_TITLE' => "Custom Fields"
+  , 'CUSTOMFIELDS_VIEW' => "Configurer Custom Fields"
+  , 'DEFAULT_VALUE' => "Valeur par Défaut"
+  , 'DELETE' => "Supprimer Champ"
+  , 'DROPDOWN_BOX' => "Liste Déroulante"
+  , 'GET_CUSTOM_FIELD_DESCR' => "affichera la valeur du champ correspondant de la page courante"
+  , 'LABEL' => "Label"
+  , 'LONG_TEXT_FIELD' => "Champs Texte Long"
+  , 'NAME' => "Nom"
+  , 'RETURN_CUSTOM_FIELD_DESCR' => "Retournera la valeur du champ pour un traitement ultérieur"
+  , 'SAVE' => "Sauvegarder Custom Fields"
+  , 'SAVE_FAILURE' => "Les champs personnalisés ne pourront pas être sauvée."
+  , 'SAVE_INVALID' => "Les noms des champs suivants sont réservés: "
+  , 'SAVE_SUCCESS' => "Les champs personnalisés ont été sauvegardé."
+  , 'TEXT_FIELD' => "Champs Texte"
+  , 'TYPE' => "Type"
+  , 'UNDO_FAILURE' => "Les champs personnalisés ne seront pas sauvegardés."
+  , 'UNDO_SUCCESS' => "Les champs personnalisés ont bien été réstauré."
+  , 'USAGE_DESCR' => "Ci-dessous vous pouvez configurer les champs personnalisés. Faites glisser les lignes à réorganiser les champs. La suppression des champs ne supprime pas les valeurs de champ à partir des pages. La valeur par défaut est la valeur initiale des nouvelles pages."
+  , 'WYSIWYG_EDITOR' => "WYSIWYG editor"
+  , 'FUNCTIONS_DESCR' => "Ces champs peuvent être accessibles dans vos thèmes:"
+  , 'ADD' => "Ajouter un nouveau Champ"
+  , 'VIEW_HIERARCHICAL' => 'Hierarchie'
+  , 'VIEW_TITLE' => 'Par Titre'
+  , 'FILTER' => 'Filtre'
+  , 'BROWSE_IMAGES' => "Parcourir"
+  , 'IMAGE' => "Image"
+  , 'BROWSE_PAGES' => "Parcourir"
+  , 'LINK' => "Lien"
+);
