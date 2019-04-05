@@ -357,7 +357,7 @@ class I18nNavigationItem {
   private $deflang = null;
   private $data = array();
   
-  public function I18nNavigationItem($item, $classes, $text, $title, $showTitles, $component) {
+  public function __construct($item, $classes, $text, $title, $showTitles, $component) {
     $this->item = $item;
     $this->classes = $classes;
     $this->text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
