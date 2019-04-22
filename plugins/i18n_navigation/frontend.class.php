@@ -195,9 +195,9 @@ class I18nNavigationFrontend {
           global $filters;
           $params = array($childurl, $pages[$childurl]['parent'], 
                           preg_split('/\s*,\s*/', html_entity_decode(stripslashes(trim(@$pages[$childurl]['tags'])), ENT_QUOTES, 'UTF-8')));
-          if(!empty($filters)){
+          if(!empty($filters) && is_array($filters)){
             foreach ($filters as $filter)  {
-              if ($filter['filter'] == I18N_FILTER_VETO_NAV_ITEM) {
+              if(array_key_exists('filter', $filter) && $filter['filter'] == I18N_FILTER_VETO_NAV_ITEM) {
                 if (call_user_func_array($filter['function'], $params)) {
                   $showIt = false; 
                   break;
