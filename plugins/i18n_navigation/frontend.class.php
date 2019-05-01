@@ -223,7 +223,7 @@ class I18nNavigationFrontend {
         }
       }
     }
-    return count($menu) > 0 ? $menu : [];
+    return count($menu) > 0 ? $menu : array();
   }
   
   private static function hasChildren($url, $show=I18N_SHOW_NORMAL) {
