@@ -208,7 +208,7 @@ class I18nNavigationFrontend {
         }
         if ($showIt) {
           $showChildren = !($show & I18N_FILTER_CURRENT) || in_array($childurl,$breadcrumbs);
-          $children = $showChildren ? self::getMenuImpl($breadcrumbs, $currenturl, $childurl, $levels-1, $show) : [];
+          $children = $showChildren ? self::getMenuImpl($breadcrumbs, $currenturl, $childurl, $levels-1, $show) : array();
           $menu[] = array(
             'url' => $childurl, 
             'parent' => $pages[$childurl]['parent'],
