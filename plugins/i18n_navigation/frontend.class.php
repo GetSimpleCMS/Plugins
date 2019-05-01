@@ -195,18 +195,20 @@ class I18nNavigationFrontend {
           global $filters;
           $params = array($childurl, $pages[$childurl]['parent'], 
                           preg_split('/\s*,\s*/', html_entity_decode(stripslashes(trim(@$pages[$childurl]['tags'])), ENT_QUOTES, 'UTF-8')));
-          foreach ($filters as $filter)  {
-            if ($filter['filter'] == I18N_FILTER_VETO_NAV_ITEM) {
-              if (call_user_func_array($filter['function'], $params)) {
-                $showIt = false; 
-                break;
+          if(!empty($filters) && is_array($filters)){
+            foreach ($filters as $filter)  {
+              if(array_key_exists('filter', $filter) && $filter['filter'] == I18N_FILTER_VETO_NAV_ITEM) {
+                if (call_user_func_array($filter['function'], $params)) {
+                  $showIt = false; 
+                  break;
+                }
               }
             }
           }
         }
         if ($showIt) {
           $showChildren = !($show & I18N_FILTER_CURRENT) || in_array($childurl,$breadcrumbs);
-          $children = $showChildren ? self::getMenuImpl($breadcrumbs, $currenturl, $childurl, $levels-1, $show) : null;
+          $children = $showChildren ? self::getMenuImpl($breadcrumbs, $currenturl, $childurl, $levels-1, $show) : array();
           $menu[] = array(
             'url' => $childurl, 
             'parent' => $pages[$childurl]['parent'],
@@ -221,7 +223,7 @@ class I18nNavigationFrontend {
         }
       }
     }
-    return count($menu) > 0 ? $menu : null;
+    return count($menu) > 0 ? $menu : array();
   }
   
   private static function hasChildren($url, $show=I18N_SHOW_NORMAL) {
@@ -357,7 +359,7 @@ class I18nNavigationItem {
   private $deflang = null;
   private $data = array();
   
-  public function I18nNavigationItem($item, $classes, $text, $title, $showTitles, $component) {
+  public function __construct($item, $classes, $text, $title, $showTitles, $component) {
     $this->item = $item;
     $this->classes = $classes;
     $this->text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
