@@ -2,7 +2,7 @@
 /*
 Plugin Name: SimpleDir
 Description: a GetSimple CMS plugin to provide directory listings
-Version: 0.2
+Version: 0.3
 Author: Rob Antonishen
 Author URI: http://ffaat.poweredbyclear.com/
 */
@@ -14,7 +14,7 @@ $thisfile=basename(__FILE__, ".php");
 register_plugin(
   $thisfile,
   'SimpleDir',
-  '0.2',
+  '0.3',
   'Rob Antonishen',
   'http://ffaat.poweredbyclear.com/',
   'Provides a simple directory listing',
@@ -54,7 +54,7 @@ function simpledir_loadconf() {
   $configfile=GSDATAOTHERPATH . 'simpledir.xml';
   if (!file_exists($configfile)) {
     //default settings
-    $xml_root = new SimpleXMLElement('<settings><dirpath>/home/user/data/uploads/</dirpath><urlpath>/data/uploads/</urlpath><ignore>php</ignore></settings>');
+    $xml_root = new SimpleXMLElement('<settings><dirpath>/home/cartocop/testbed/data/uploads/</dirpath><urlpath>/data/uploads/</urlpath><ignore>php</ignore></settings>');
     if ($xml_root->asXML($configfile) === FALSE) {
 	  exit('Error saving ' . $configfile . ', check folder privlidges.');
     }
@@ -157,7 +157,7 @@ function simpledir_display($contents)
     $currentdir = "";
 
     if((isset($_GET["subdir"])) && ($_GET["subdir"]<>''))
-      $currentdir = str_replace('.','',urldecode($_GET["subdir"])) . '/';
+      $currentdir = urldecode($_GET["subdir"]) . '/';
  
     $current_url = explode('?', $_SERVER["REQUEST_URI"]);
     $current_url = $current_url[0];
@@ -170,7 +170,16 @@ function simpledir_display($contents)
     {
       $simpledir_dir = $simpledir_conf['dirpath'] . $currentdir;	
     }
+    
+    //check for directory traversal attempt and scrub to base directory
+    if (strpos(realpath($simpledir_dir),$simpledir_conf['dirpath']) !== 0)
+      $simpledir_dir = $simpledir_conf['dirpath'];
 
+    //rebuild clean param for links
+    $currentdir = substr(realpath($simpledir_dir),strlen($simpledir_conf['dirpath']));
+    if ($currentdir<>'')
+      $currentdir = $currentdir . '/';
+      
     $tmp_content = str_replace("(% simpledir %)","",$tmp_content);
    
     $start_content = substr($tmp_content, 0 ,$location);
