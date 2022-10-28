@@ -125,10 +125,9 @@ function simpledir_config() {
   echo '<label>Base URL for Directory (example <i>/data/uploads/)</i>:</label>';
   echo '<p><input name="urlpath" type="text" size="90" value="' . $simpledir_conf['urlpath'] .'"></p>';      
   
-  echo '<label>Extensions to Ignore (comma separated, no spaces. Example <i>php,txt</i>:</label><p>';
+  echo '<label>Extensions to Ignore (comma separated, no spaces. Example <i>php,txt</i>:</label>';
   echo '<p><input name="ignore" type="text" size="90" value="' . implode(',',$simpledir_conf['ignore']) .'"></p>';   
 
-      
   echo "<input name='submit_settings' class='submit' type='submit' value='" . i18n_r('BTN_SAVESETTINGS') . "'><br />";
   echo '</form>';
   echo '<br /><p><i>Insert (% simpledir %) as the page content where you wish the directory to appear.  Don\'t forget to modify the CSS using the included CSS file as a guide.</i></p>';
