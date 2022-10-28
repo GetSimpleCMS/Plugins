@@ -14,7 +14,7 @@ $thisfile=basename(__FILE__, ".php");
 register_plugin(
 	$thisfile, 													# ID of plugin, should be filename minus php
 	'Debug Mode',			 									# Title of plugin
-	'1.1', 														# Version of plugin
+	'1.2', 														# Version of plugin
 	'Mike Swan',												# Author of plugin
 	'http://www.digimute.com/', 								# Author URL
 	'Turn On/Off Debug Mode', 	# Plugin Description
