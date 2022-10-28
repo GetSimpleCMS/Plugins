@@ -10,7 +10,7 @@
   $goText = @$i18n['GO'];
   $is_ajax = !isset($params['ajax']) || $params['ajax'];
   $live = $is_ajax && isset($params['live']) && $params['live'];
-  $url = find_url($slug,null);
+  $url = function_exists('find_i18n_url') ? find_i18n_url($slug,null) : find_url($slug,null);
   $method = strpos($url,'?') !== false ? 'POST' : 'GET'; // with GET the parameters are not submitted!
   $language = isset($params['lang']) ? $params['lang'] : null;
   $placeholderText = @$params['PLACEHOLDER'];
@@ -25,6 +25,14 @@
       $reqlangs = $reqlangs === null ? $lang : $reqlangs.','.$lang;
     }
   }
+  
+  // mark
+  $mark = false;
+  if (file_exists(GSDATAOTHERPATH.I18N_SEARCH_SETTINGS_FILE)) {
+    $data = getXML(GSDATAOTHERPATH.I18N_SEARCH_SETTINGS_FILE);
+    $mark = true && $data->mark;
+  }
+  
 ?>
 <form action="<?php echo $url; ?>" method="<?php echo $method; ?>" class="search">
 <?php if ($showTags && $minTagSizePercent && $maxTagSizePercent && $minTagSizePercent > 0 && $minTagSizePercent <= $maxTagSizePercent) { ?>
@@ -77,18 +85,29 @@
   <script type="text/javascript">
     <?php if ($live) { ?>
     function search_live() {
-      $form = $('#search-temp').closest('form');
+      var $form = $('#search-temp').closest('form');
       if ($form.size() != 1) return;
+      var words = $form.find('[name=words]').val();
+      var tags = $form.find('[name=tags]').val();
       $('ul.search-results.search-live').next('.paging, .search-results-paging').remove();
       var data = {
-        words: $form.find('[name=words]').val(),
-        tags: <?php echo json_encode($addTags.' '); ?> + $form.find('[name=tags]').val()
+        words: words,
+        tags: <?php echo json_encode($addTags.' '); ?> + tags
       };
       $('#search-temp').load(<?php echo json_encode($url.' #search-results-live'); ?>, data, 
         function() {
           $lis = $('#search-temp').find('li.search-entry').remove();
           $('ul.search-results.search-live').children().remove();
           $('ul.search-results.search-live').append($lis);
+          <?php if ($mark) { ?>
+          $('ul.search-results.search-live li a').click(function(e) {
+            href = e.target.href;
+            var pos = href.indexOf('?');
+            href += (pos > 0 ? '&' : '?') + 'mark=' + escape(words+' '+tags);
+            e.target.href = href;
+            return true;
+          });
+          <?php } ?>
         }
       );
     }

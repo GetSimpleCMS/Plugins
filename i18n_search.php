@@ -2,7 +2,7 @@
 /*
 Plugin Name: I18N Search
 Description: Search (I18N enabled!)
-Version: 2.8
+Version: 2.13.1
 Author: Martin Vlcek
 Author URI: http://mvlcek.bplaced.net
 
@@ -87,7 +87,7 @@ define('I18N_FILTER_DISPLAY_ITEM', 'search-display');
 register_plugin(
   $thisfile, 
   'I18N Search',   
-  '2.8',     
+  '2.13.1',     
   'Martin Vlcek',
   'http://mvlcek.bplaced.net', 
   'Search (I18N enabled!)',
@@ -96,7 +96,6 @@ register_plugin(
 );
 
 # load i18n texts
-require_once(GSPLUGINPATH.'i18n_common/common.php');
 if (basename($_SERVER['PHP_SELF']) != 'index.php') { // back end only
   i18n_merge('i18n_search', substr($LANG,0,2));
   i18n_merge('i18n_search', 'en');
@@ -109,6 +108,7 @@ add_action('plugins-sidebar', 'createSideMenu', array($thisfile, i18n_r('i18n_se
 
 # ===== FRONTEND =====
 add_action('index-pretemplate','i18n_search_pretemplate_for_rss');
+add_action('index-pretemplate','i18n_search_pretemplate_for_mark');
 add_action('theme-header','i18n_search_header_for_rss');
 add_filter('content','i18n_search_content');
 add_filter('search-index-page', 'i18n_search_index_page');
@@ -146,6 +146,8 @@ function i18n_search_index_page($item) {
   if ($creDate) {
     $item->addTags('creDate', array('_cre_'.date('Ym',$creDate), '_cre_'.date('Y',$creDate)));
   }
+  $menu = @$item->menuStatus;
+  if ($menu == 'Y') $item->addTags('menuStatus', array('_menu'));
 }
 
 
@@ -164,6 +166,23 @@ function i18n_search_pretemplate_for_rss() {
 function i18n_search_header_for_rss() {
   require_once(GSPLUGINPATH.'i18n_search/viewer.class.php');
   return I18nSearchViewer::processHeaderForRSS();
+}
+
+function i18n_search_pretemplate_for_mark() {
+  if (file_exists(GSDATAOTHERPATH.I18N_SEARCH_SETTINGS_FILE)) {
+    $data = getXML(GSDATAOTHERPATH.I18N_SEARCH_SETTINGS_FILE);
+    if (!$data || !((string) $data->mark)) return;
+    require_once(GSPLUGINPATH.'i18n_search/marker.class.php');
+    $words = I18nSearchMarker::getWords();
+    if ($words && count($words) > 0) {
+      add_filter('content','i18n_search_mark');
+    }
+  }
+}
+
+function i18n_search_mark($content) {
+  require_once(GSPLUGINPATH.'i18n_search/marker.class.php');
+  return I18nSearchMarker::mark($content, I18nSearchMarker::getWords());
 }
 
 

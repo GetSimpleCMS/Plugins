@@ -30,7 +30,9 @@ class I18nSearchViewer {
           include(GSPLUGINPATH.'i18n_search/rss.php');
           die;
         } else {
-          self::$rssHeaders[] = '<link rel="alternate" type="application/rss+xml" title="'.htmlspecialchars(@$params['title']).'" href="'.find_url($url,$parent).'?'.$params['name'].'" />';
+          $href = function_exists('find_i18n_url') ? find_i18n_url($url,$parent) : find_url($url,$parent);
+          $href .= (strpos($url,'?') === false ? '?' : '&').$params['name'];
+          self::$rssHeaders[] = '<link rel="alternate" type="application/rss+xml" title="'.htmlspecialchars(@$params['title']).'" href="'.htmlspecialchars($href).'" />';
         }
       }
     }
@@ -43,7 +45,9 @@ class I18nSearchViewer {
   public static function displayRSSLink($params) {
     global $url, $parent, $SITEURL;
     if (!@$params['name']) return;
-    echo '<a href="'.find_url($url,$parent).'?'.$params['name'].'"><img src="'.$SITEURL.'plugins/i18n_search/images/rss.gif" alt="rss" width="12" height="12"/> '.htmlspecialchars(@$params['title']).'</a>';
+    $href = function_exists('find_i18n_url') ? find_i18n_url($url,$parent) : find_url($url,$parent);
+    $href .= (strpos($url,'?') === false ? '?' : '&').$params['name'];
+    echo '<a href="'.htmlspecialchars($href).'"><img src="'.$SITEURL.'plugins/i18n_search/images/rss.gif" alt="rss" width="12" height="12"/> '.htmlspecialchars(@$params['title']).'</a>';
   }
   
   public static function displaySearchForm($params=null) {

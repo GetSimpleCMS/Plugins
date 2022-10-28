@@ -1,4 +1,10 @@
 <?php
+/**********************************************************
+* @File:				pl.php - spolszczenie dla rozszerzenia i18n search
+* @plugin version:		2.8
+* @Translation Version:	1.1
+* @Traductor:           Wojciech Jodła - www.WuJitsu.pl
+**********************************************************/
 $i18n = array(
     'GO' => "Szukaj"
   , 'HEADER' => "Wyniki wyszukiwania"
@@ -13,7 +19,7 @@ $i18n = array(
   , 'NEXT_TITLE' => "Następna strona"
   , 'LAST_TEXT' => ">>"
   , 'LAST_TITLE' => "Ostatnia strona"
-  , 'CONFIGURE' => "Konfiguracja I18N Search"
+  , 'CONFIGURE' => "Konfiguracja i18n search"
   , 'CONFIGURATION' => "I18N Search"
   , 'VIEW_USAGE' => "Instrukcja"
   , 'VIEW_SETTINGS' => "Ustawienia"
@@ -42,11 +48,11 @@ $i18n = array(
   , 'RESET_SUCCESS' => "Konfiguracja wyszukiwania została zresetowana do ustawień domyślnych."
   , 'UNDO_FAILURE' => "Konfiguracja wyszukiwania nie mogła zostać przywrócona."
   , 'UNDO_SUCCESS' => "Konfiguracja wyszukiwania została przywrócona."
-  , 'USAGE_IN_PAGE' => "Aby używać rozszerzenia I18N search, dodaj nową stronę z przykładowym tytułem i URL-em strony głównej o nazwie \"Search\" - a wtreści wklej poniższe dane:"
-  , 'USAGE_IN_TEMPLATE' => "Aby osadzić formularz wyszukiwania w panelu bocznym (sidebar) lub w szablonie (np. w nagłówku strony), użyj poniższego kodu ('search' to nazwa strony pokazującej wyniki wyszukiwania):"
+  , 'USAGE_IN_PAGE' => "Aby używać rozszerzenia I18N search, dodaj nową stronę z przykładowym tytułem i URL-em strony głównej<br> o nazwie \"<b><i>search</i></b>\", a wtreści wklej poniższe dane:"
+  , 'USAGE_IN_TEMPLATE' => "Aby osadzić formularz wyszukiwania w panelu bocznym (sidebar) lub w szablonie (np. w nagłówku strony), użyj poniższego kodu ('<i>search</i>' to nazwa strony pokazującej wyniki wyszukiwania):"
   , 'CUSTOMIZE_1' => "Aby dostosować wyszukiwanie wejdź w"
   , 'CUSTOMIZE_2' => "i zdefiniuj dodatkowe parametry przy wywoływaniu wyszukiwania np."
-  , 'CUSTOMIZE_3' => "Możesz wykorzystać następujące parametry:"
+  , 'CUSTOMIZE_3' => "<br>Możesz wykorzystać następujące parametry:"
   , 'PARAMETER_NAME' => "Nazwa"
   , 'PARAMETER_DESCRIPTION' => "Opis"
   , 'SLUG_DESCR' => "Nazwa strony/URL na której zostaną wyświetlone wyniki wyszukiwania, np. search"
@@ -68,4 +74,12 @@ $i18n = array(
   , 'TRANSLITERATION_DESCRIPTION' => "Tutaj możesz wskazać tłumaczenie znaków używanych podczas wyszukiwania. Każda linia zawiera jedną konwersję w postaci <em>znak źródłowy \"=\" znak docelowy</em>, np. <em>ż=z</em>."
   , 'TRANSLITERATION_SETTINGS' => "Ustawienia transliteracji"
   , 'AJAX_DESCR' => "Wartość zerowa wyłączy AJAXową funkcjonalność formularza wyszukiwania oraz chmury tagów."
+  , 'PLACEHOLDER_DESCR' => "Miejsce (placeholder) na pole wyszukiwania"
+  , 'LIVE_DESCR' => "Wartość 1 włączy natychmiastowe wyszukiwanie, wyświetlające wyniki podczas wpisywania tekstu lub tagów w polu wyszukiwania. Aby włączyć, musisz ustawić atrybut live=1 zarówno dla formularza wyszukiwania oraz wyników wyszukiwania."
+  , 'IDPREFIX_DESCR' => "Jeśli ustawisz ten parametr, każdy wynik wyszukiwania otrzyma ID z ustawionym prefiksem oraz zwiększającym się numerem."
+  , 'TAGCLASSPREFIX_DESCR' => "Jeśli ustawisz ten parametr, wszystkie tagi zostaną dodane jako klasy CSS - poprzedzone wartością parametru - do wyników wyszukiwania. Możesz użyć tego parametru aby ostylować wyniki bazujące na tagach."
+  , 'TAG_MODE' => "Jakich tagów (znaczników) używać ?"
+  , 'TAGS_LANG_OR_DEFLANG' => "Tagi domyślnego języka, jeśli nie występują tagi dla określonego języka."
+  , 'TAGS_ALWAYS_DEFLANG' => "Tagi domyślnego języka. Always use tags of default language"
+  , 'TAGS_ALWAYS_LANG' => "Specyficzne tagi językowe. Always use language specific tags"  
 );

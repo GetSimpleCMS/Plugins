@@ -17,7 +17,7 @@
     foreach (array('contentWeight','titleWeight','tagWeight','tagMode','minTagSize','maxTagSize','max','numWords') as $name) {
       if (isset($_POST[$name]) && is_numeric($_POST[$name])) $params[$name] = $_POST[$name];
     }
-    foreach (array('showTags','showLanguage','showDate','showPaging') as $name) {
+    foreach (array('showTags','showLanguage','showDate','showPaging','mark') as $name) {
       if (isset($_POST[$name])) $params[$name] = 1; else $params[$name] = 0; 
     }
     if (@$_POST['transliteration']) $params['transliteration'] = $_POST['transliteration'];
@@ -65,6 +65,7 @@
   if (!array_key_exists('showLanguage', $params)) $params['showLanguage'] = function_exists('return_i18n_default_language');
   if (!array_key_exists('showDate', $params)) $params['showDate'] = true;
   if (!array_key_exists('showPaging', $params)) $params['showPaging'] = true;
+  if (!array_key_exists('mark', $params)) $params['mark'] = false;
   $view = @$_REQUEST['view'];
   if (!$view) $view = 'usage';
   $link = "load.php?id=i18n_search&view=settings";
@@ -108,6 +109,7 @@
         <tr><td><?php i18n('i18n_search/SHOW_LANGUAGE'); ?></td><td><input type="checkbox" name="showLanguage" value="on" <?php echo @$params['showLanguage'] ? 'checked="checked"' : ''; ?>/></td><td>(showLanguage)</td></tr>
         <tr><td><?php i18n('i18n_search/SHOW_DATE'); ?></td><td><input type="checkbox" name="showDate" value="on" <?php echo @$params['showDate'] ? 'checked="checked"' : ''; ?>/></td><td>(showDate)</td></tr>
         <tr><td><?php i18n('i18n_search/SHOW_PAGING'); ?></td><td><input type="checkbox" name="showPaging" value="on" <?php echo @$params['showPaging'] ? 'checked="checked"' : ''; ?>/></td><td>(showPaging)</td></tr>
+        <tr><td><?php i18n('i18n_search/MARK'); ?></td><td><input type="checkbox" name="mark" value="on" <?php echo @$params['mark'] ? 'checked="checked"' : ''; ?>/></td><td></td></tr>
         <tr><td colspan="3"><strong><?php i18n('i18n_search/TRANSLITERATION_SETTINGS'); ?></strong></td></tr>
         <tr><td colspan="3"><?php i18n('i18n_search/TRANSLITERATION_DESCRIPTION'); ?></td></tr>
         <tr><td><?php i18n('i18n_search/TRANSLITERATION'); ?></td><td><textarea name="transliteration" style="width:5em; height:100px;" class="text"><?php echo htmlspecialchars(@$params['transliteration']); ?></textarea></td><td></td></tr>

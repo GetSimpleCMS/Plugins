@@ -4,6 +4,33 @@ if (!function_exists('i18n_search_display_with_component')) {
     eval("?>" . $component . "<?php ");
   }
 }
+if (!function_exists('i18n_search_order_by_tags')) {
+  function i18n_search_order_by_tags($items, $tags) {
+    if (!is_array($tags)) $tags = preg_split('/\s*,\s*/', $tags);
+    foreach ($tags as $i => $tag) $groups[$i] = array();
+    foreach ($items as $item) {
+      foreach ($tags as $i => $tag) {
+        if ($tag == '*' || @in_array($tag, $item->tags)) $groups[$i][] = $item;
+      }
+    }
+    $newitems = array();
+    foreach ($groups as $group) $newitems = array_merge($newitems, $group);
+    return $newitems;
+  }
+}
+if (!function_exists('i18n_search_group_by_tags')) {
+  function i18n_search_group_by_tags($items, $tags) {
+    
+  }
+}
+if (!function_exists('i18n_search_archive')) {
+  function i18n_search_archive($items, $until) {
+    
+  }
+}
+
+  require_once(GSPLUGINPATH.'i18n_search/searcher.class.php');
+
   $i18n = &$params; // alias for i18n parsing
   $is_i18n = function_exists('return_i18n_default_language');
   if ($is_i18n && array_key_exists('i18n',$params) && !$params['i18n']) $is_i18n = false;
@@ -28,11 +55,30 @@ if (!function_exists('i18n_search_display_with_component')) {
   $componentName = array_key_exists('component',$params) ? $params['component'] : null;
   $idPrefix = array_key_exists('idPrefix', $params) ? $params['idPrefix'] : null;
   $tagClassPrefix = array_key_exists('tagClassPrefix', $params) ? $params['tagClassPrefix'] : null;
-
+  
   $pageNum = $showPaging && isset($_REQUEST['page']) ? @((int) $_REQUEST['page']) - 1 : 0;
   $first = $pageNum * $max;
-  $r = return_i18n_search_results($alltags, $allwords, $first === null ? 0 : $first, $max, $order, $lang);
-  $results = $r['results'];
+
+  $processFunction = array_key_exists('process', $params) ? $params['process'] : null;
+  $processParameter = $processFunction && array_key_exists('parameter', $params) ? $params['parameter'] : null;
+  # get all results
+  $allresults = I18nSearcher::search($alltags, $allwords, $order, $lang);
+  if ($processFunction) {
+    if (!function_exists($processFunction) && function_exists('i18n_search_'.$processFunction)) {
+      $processFunction = 'i18n_search_'.$processFunction;
+    }
+    # process results, e.g.
+    $allresults = call_user_func($processFunction, $allresults, $processParameter);
+  }
+  # get requested result page
+  $totalCount = count($allresults);
+  if ($max > 0) {
+    $results = array_slice($allresults, $first, $max); 
+  } else if ($first > 0) { 
+    $results = array_slice($results, $first);
+  } else {
+    $results = $allresults;
+  }
   
   if (trim($headerText) != '') {
 ?>
@@ -44,7 +90,7 @@ if (!function_exists('i18n_search_display_with_component')) {
 <p class="search-no-results"><?php echo htmlspecialchars($notFoundText); ?></p>
 <?php
   } else {
-    $numpages = 1 + (int)(($r['totalCount']-1) / $max);
+    $numpages = 1 + (int)(($totalCount-1) / $max);
     $oldLocale = setlocale(LC_TIME,'0');
     if ($dateLocale) setlocale(LC_TIME, preg_split('/\s*,\s*/', $dateLocale));
     if ($componentName) {
@@ -82,6 +128,7 @@ if (!function_exists('i18n_search_display_with_component')) {
       } else {
         global $filters;
         $done = false;
+        // is there any plugin that displays/renders this item?
         foreach ($filters as $filter)  {
           if ($filter['filter'] == I18N_FILTER_DISPLAY_ITEM) {
             if (call_user_func_array($filter['function'], array($item, $showLanguage, $showDate, $dateFormat, $numWords))) {
@@ -91,6 +138,7 @@ if (!function_exists('i18n_search_display_with_component')) {
           }
         }
         if (!$done) {
+          // let's display the item in the standard way
           $link = !$is_i18n && @$item->simplelink ? $item->simplelink : $item->link;
 ?>
     <h3 class="search-entry-title">
@@ -124,30 +172,32 @@ if (!function_exists('i18n_search_display_with_component')) {
       // determine link
       $link = function_exists('get_i18n_page_url') ? get_i18n_page_url(true) : get_page_url(true);
       $link .= (strpos($link,'?') !== false ? '&' : '?');
-      $link .= 'tags='.urlencode(@$_REQUEST['tags']).'&words='.urlencode(@$_REQUEST['words']);
-      $link .= '&search='.urlencode(@$_REQUEST['search']);
+      if (@$_REQUEST['tags']) $link .= 'tags='.urlencode(@$_REQUEST['tags']) . '&';
+      if (@$_REQUEST['words']) $link .= 'words='.urlencode(@$_REQUEST['words']) . '&';
+      $link1 = substr($link, 0, -1);
       if (defined('PAGIFY_SEPARATOR')) {
         preg_match('/^([^\?]*[^\?\/])(\/?(\?.*)?)$/', $link, $match);
         $link = $match[1].PAGIFY_SEPARATOR.'%PAGE%'.@$match[2];
       } else {
-        $link .= '&page=%PAGE%';
+        $link .= 'page=%PAGE%&';
       }
+      $link = substr($link, 0, -1);
       if (function_exists('return_pagify_navigation')) {
-        $pagingHtml = return_pagify_navigation($numpages, $pageNum, $link);
+        $pagingHtml = return_pagify_navigation($numpages, $pageNum, $link, $link1);
       } else {
         $link = htmlspecialchars($link);
         $pagingHtml = '<div class="search-results-paging">';
         if (@$i18n['FIRST_TEXT'] && $pageNum > 0) {
-          $pagingHtml .= '<span class="first"><a href="'.str_replace('%PAGE%',1,$link).'" title="'.htmlspecialchars(@$i18n['FIRST_TITLE']).'">'.htmlspecialchars(@$i18n['FIRST_TEXT']).'&nbsp;</a></span>';
+          $pagingHtml .= '<span class="first"><a href="'.$link1.'" title="'.htmlspecialchars(@$i18n['FIRST_TITLE']).'">'.htmlspecialchars(@$i18n['FIRST_TEXT']).'&nbsp;</a></span>';
         }
         if (@$i18n['PREV_TEXT'] && $pageNum > 0) {
-          $pagingHtml .= '<span class="previous"><a href="'.str_replace('%PAGE%',$pageNum,$link).'" title="'.htmlspecialchars(@$i18n['PREV_TITLE']).'">'.htmlspecialchars(@$i18n['PREV_TEXT']).'&nbsp;</a></span>';
+          $pagingHtml .= '<span class="previous"><a href="'.($pageNum == 1 ? $link1 : str_replace('%PAGE%',$pageNum,$link)).'" title="'.htmlspecialchars(@$i18n['PREV_TITLE']).'">'.htmlspecialchars(@$i18n['PREV_TEXT']).'&nbsp;</a></span>';
         }
         for ($i=0; $i<$numpages; $i++) {
           if ($i == $pageNum) {
             $pagingHtml .= ' <span class="current">'.($i+1).'</span>';
           } else {
-            $pagingHtml .= ' <span><a href="'.str_replace('%PAGE%',$i+1,$link).'">'.($i+1).'</a></span>';
+            $pagingHtml .= ' <span><a href="'.($i == 0 ? $link1 : str_replace('%PAGE%',$i+1,$link)).'">'.($i+1).'</a></span>';
           }
         }
         if (@$i18n['NEXT_TEXT'] && $pageNum < $numpages-1) {

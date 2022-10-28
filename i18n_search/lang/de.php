@@ -1,6 +1,7 @@
 <?php
 $i18n = array(
     'GO' => "Suchen",
+    'PLACEHOLDER' => "Suchwörter",
     'HEADER' => "Suchergebnisse",
     'NOT_FOUND' => "Keine Ergebnisse gefunden",
     'DATE_LOCALE' => "de_DE.utf8,de_DE,de",
@@ -75,5 +76,6 @@ $i18n = array(
     'TAG_MODE' => "Welche Schlüsselwörter sollen verwendet werden",
     'TAGS_LANG_OR_DEFLANG' => "Die der Standardsprache, wenn keine sprachspezifischen vorhanden sind",
     'TAGS_ALWAYS_DEFLANG' => "Immer die der Standardsprache",
-    'TAGS_ALWAYS_LANG' => "Immer die sprachspezifischen"
+    'TAGS_ALWAYS_LANG' => "Immer die sprachspezifischen",
+    'MARK' => "Suchwörter auf Seiten markieren"
 );

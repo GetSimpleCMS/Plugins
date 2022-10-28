@@ -1,6 +1,7 @@
 <?php
 $i18n = array(
     'GO' => "Search"
+  , 'PLACEHOLDER' => "Search words"
   , 'HEADER' => "Search Results"
   , 'NOT_FOUND' => "No results found"
   , 'DATE_LOCALE' => "en_US.utf8,en_US,en"
@@ -76,4 +77,5 @@ $i18n = array(
   , 'TAGS_LANG_OR_DEFLANG' => "Use tags of default language, if no language specific tags"
   , 'TAGS_ALWAYS_DEFLANG' => "Always use tags of default language"
   , 'TAGS_ALWAYS_LANG' => "Always use language specific tags"
+  , 'MARK' => "Mark search terms on pages"
 );

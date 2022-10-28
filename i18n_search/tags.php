@@ -69,7 +69,7 @@
   $diffPercent = $maxPercent - $minPercent;
   if (@$slug) {
     $pagedata = getXML(GSDATAPAGESPATH . $slug . '.xml');
-    $link = find_url($slug, (string) $pagedata->parent);
+    $link = function_exists('find_i18n_url') ? find_i18n_url($slug, (string) $pagedata->parent) : find_url($slug, (string) $pagedata->parent);
     $link .= (strpos($link,'?') !== false ? '&' : '?') . 'tags=';
   }
   foreach ($alltags as $tag => &$urls) {

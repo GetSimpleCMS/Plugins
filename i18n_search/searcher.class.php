@@ -16,8 +16,12 @@ class I18nSearchExcerpt {
     if (preg_match('/^(-?\d+)\s*([a-zA-Z]*)$/', $excerptlength, $match)) {
       $length = (int) $match[1];
       $unit = strtolower($match[2]);
+      // remove place holders
+      $content = preg_replace('/\(%.*?%\)/', '', $content);
+      $content = preg_replace('/\{%.*?%\}/', '', $content);
       $content = trim($content);
       if ($unit == 'p' || $unit == 'pm') {
+        $content = preg_replace('/<p(\s[^>]*)?>\s*<\/p>/', '', $content);
         $pos = 0;
         while ($length > 0 && ($nextpos = strpos($content,'</p>',$pos)) !== false) {
           $pos = $nextpos+4;
@@ -27,8 +31,9 @@ class I18nSearchExcerpt {
         $this->text = ($pos > 0 ? substr($content, 0, $pos) : '');
         $this->moreText = ($unit == 'pm' && $this->more ? '<p>...</p>' : '');
       } else if ($unit == 'c' || $unit == 'cm') {
-        $text = html_entity_decode(strip_tags($content), ENT_QUOTES, 'UTF-8');
-        if (function_exists('mb_strlen') && mb_strlen($text,'UTF-8') > $length) {
+        $text = html_entity_decode(str_replace('&nbsp;',' ',strip_tags($content)), ENT_QUOTES, 'UTF-8');
+        $text = trim($text);
+        if (false && function_exists('mb_strlen') && mb_strlen($text,'UTF-8') > $length) {
           $this->text = htmlspecialchars(mb_substr($text,0,$length,'UTF-8'));
           $this->more = true;
           $this->moreText = $unit == 'cm' ? '...' : '';
@@ -40,7 +45,8 @@ class I18nSearchExcerpt {
           $this->text = htmlspecialchars($text);
         }
       } else if ($length > 0) {
-        $text = html_entity_decode(strip_tags($content), ENT_QUOTES, 'UTF-8');
+        $text = html_entity_decode(str_replace('&nbsp;',' ',strip_tags($content)), ENT_QUOTES, 'UTF-8');
+        $text = trim($text);
         $excerpt = preg_split("/\s+/", $text, $length+1);
         if (count($excerpt) > $length) { 
           array_pop($excerpt);
@@ -123,6 +129,7 @@ class I18nSearchResultItem {
 class I18nSearchResultPage extends I18nSearchResultItem {
   
   protected $data = null;
+  protected $defdata = null; // default language page
   protected $tags = null;
   protected $title = null;
   protected $content = null;
@@ -149,6 +156,11 @@ class I18nSearchResultPage extends I18nSearchResultItem {
           $this->content = stripslashes(htmlspecialchars_decode($this->data->content, ENT_QUOTES));
         }
         return $this->content;
+      case 'contenttext':
+        if ($this->content == null) {
+          $this->content = stripslashes(htmlspecialchars_decode($this->data->content, ENT_QUOTES));
+        }
+        return trim(strip_tags($this->content));
       case 'url':
         return $this->id;
       case 'slug': 
@@ -163,8 +175,28 @@ class I18nSearchResultPage extends I18nSearchResultItem {
         }    
       case 'simplelink':   
         return find_url($this->fullId, $this->parent);
+      case 'menuOrder':
+        if ($this->id != $this->fullId) return $this->getDefaultDataProp($name);
+        return (int) $this->data->$name;
+      case 'parent':
+      case 'menuStatus':
+      case 'private':
+        if ($this->id != $this->fullId) return $this->getDefaultDataProp($name);
       default: 
         return (string) $this->data->$name;
+    }
+  }
+  
+  private function getDefaultDataProp($name) {
+    if (!$this->defdata) {
+      $this->defdata = getXML(GSDATAPAGESPATH . $this->id . '.xml');
+      if (!$this->defdata) return null;
+    }
+    switch ($name) {
+      case 'menuOrder': 
+        return (int) $this->defdata->$name;
+      default:
+        return (string) $this->defdata->$name;
     }
   }
 
@@ -175,10 +207,13 @@ class I18nSearcher {
   
   private $tags = null;
   private $words = null;
-  private $order = null;
   private $language = null;
   private $transliteration = null;
-
+  
+  # for sorting
+  private $sort_field = null;
+  private $sort_order = '+';
+  
   public static function &search($tags=null, $words=null, $order=null, $lang=null) {
     $results = array();
     if (!$tags && isset($_REQUEST['tags'])) $tags = trim($_REQUEST['tags']);
@@ -225,8 +260,24 @@ class I18nSearcher {
     }
     $this->tags = is_array($tags) ? $tags : (trim($tags) != '' ? preg_split("/\s+/", trim($tags)) : array());
     $this->words = is_array($words) ? $words : (trim($words) != '' ? preg_split("/\s+/", trim($words)) : array());
-    $this->order = $order;
     $this->language = $language;
+    $order = trim($order);
+    if (substr($order,0,1) == '+' || substr($order,0,1) == '-') {
+      $this->sort_order = substr($order,0,1);
+      $this->sort_field = substr($order,1);
+    } else switch ($order) {
+        case 'url': $this->sort_field = 'url'; $this->sort_order = '+'; break;
+        case 'reverseurl': $this->sort_field = 'url'; $this->sort_order = '-'; break;
+        case 'date': $this->sort_field = 'date'; $this->sort_order = '-'; break;
+        case 'created': $this->sort_field = 'created'; $this->sort_order = '-'; break;
+        case 'score': $this->sort_field = 'score'; $this->sort_order = '-'; break;
+        default: 
+          if ($order) {
+            $this->sort_field = $order; $this->sort_order = '+';
+          } else {
+            $this->sort_field = 'score'; $this->sort_order = '-';
+          }
+    }
   }
   
   private function translate($s) {
@@ -237,35 +288,63 @@ class I18nSearcher {
     
   private function compare_score($a, $b) {
     if ($a->score == $b->score) {
-      $r = $b->pubDate - $a->pubDate;
+      $r = $a->pubDate - $b->pubDate;
       return $r != 0 ? $r : strcmp($a->fullId, $b->fullId);
     } else {
-      return $b->score - $a->score;
+      return $a->score - $b->score;
     }
   }
   
   private function compare_url($a, $b) {
-    return strcmp($a->fullId, $b->fullId);
-  }
-  
-  private function compare_reverseurl($a, $b) {
-    return strcmp($b->fullId, $a->fullId);
+    return strcmp(strtolower($a->fullId), strtolower($b->fullId));
   }
   
   private function compare_date($a, $b) {
-    $r = $b->pubDate - $a->pubDate;
-    return $r != 0 ? $r : strcmp($a->fullId, $b->fullId);
+    $r = $a->pubDate - $b->pubDate;
+    return $r != 0 ? $r : strcmp(strtolower($a->fullId), strtolower($b->fullId));
   }
   
   private function compare_created($a, $b) {
-    $r = $b->creDate - $a->creDate;
+    $r = $a->creDate - $b->creDate;
+    return $r != 0 ? $r : strcmp(strtolower($a->fullId), strtolower($b->fullId));
+  }
+  
+  private function compare_field($a, $b) {
+    $field = $this->sort_field;
+    $fa = (string) $a->$field;
+    $fb = (string) $b->$field;
+    if (is_numeric($fa)) {
+      $vala = floatval($fa);
+    } else {
+      $vala = strtotime($fa);
+      if ($vala === false) $vala = $fa;
+    }
+    if (is_numeric($fb)) {
+      $valb = floatval($fb);
+    } else {
+      $valb = strtotime($b->$field);
+      if ($valb === false) $valb = $b->$field;
+    }
+    if (is_string($vala) && is_string($valb)) {
+      if (function_exists('mb_strtolower')) {
+        $r = strcmp(mb_strtolower($vala), mb_strtolower($valb)); // probably incorrect - should use Collator?
+      } else {
+        $r = strcmp(strtolower($vala), strtolower($valb));
+      }
+    } else if (is_string($vala)) {
+      $r = 1;  # numbers before strings
+    } else if (is_string($valb)) {
+      $r = -1; # numbers before strings
+    } else {
+      $r = $vala - $valb;
+    }
     return $r != 0 ? $r : strcmp($a->fullId, $b->fullId);
   }
     
   private function is_word($line, $word, $ismb) {
     $comp = $line;
     if ($this->transliteration) $comp = $this->translate(substr($line,0,strpos($line,' ')+1));
-    if (($ismb && mb_strlen($word, 'UTF-8') <= 3) || (!$ismb && strlen($word) <= 3)) {
+    if (($ismb && mb_strlen($word, 'UTF-8') < 3) || (!$ismb && strlen($word) < 3)) {
       return strncmp($comp, $word.' ', strlen($word.' ')) == 0;
     } else {
       return strncmp($comp, $word, strlen($word)) == 0;
@@ -415,13 +494,15 @@ class I18nSearcher {
         }
         if (!$vetoed) $filteredresults[] = $item;
       }
-      switch ($this->order) {
+      switch ($this->sort_field) {
         case 'url': usort($filteredresults, array($this,'compare_url')); break;
-        case 'reverseurl': usort($filteredresults, array($this,'compare_reverseurl')); break;
         case 'date': usort($filteredresults, array($this,'compare_date')); break;
         case 'created': usort($filteredresults, array($this,'compare_created')); break;
-        case 'score':
-        default: usort($filteredresults, array($this,'compare_score'));
+        case 'score': usort($filteredresults, array($this,'compare_score')); break;
+        default: usort($filteredresults, array($this,'compare_field'));
+      }
+      if ($this->sort_order == '-') {
+        $filteredresults = array_reverse($filteredresults);
       }
     }
     return $filteredresults;

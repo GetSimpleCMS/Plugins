@@ -6,6 +6,7 @@ class I18nSearchPageItem {
   static private $defaultLanguage;
 
   private $data;
+  private $defdata = null; // data of default language
   private $id;
   private $language = '';
   private $tags = array();
@@ -42,14 +43,34 @@ class I18nSearchPageItem {
     switch ($name) {
       case 'data': return $this->data;
       case 'id': return $this->id;
-      case 'fullId': return $this->data->url;
+      case 'fullId': return (string) $this->data->url;
       case 'language': return $this->language; 
       case 'pubDate': return $this->pubDate;
       case 'creDate': return $this->creDate;
       case 'tags': return $this->tags;
       case 'title': return $this->title;
       case 'content': return $this->content;
-      default: return $this->data->$name;
+      case 'menuOrder':
+        if ($this->id != (string) $this->data->url) return $this->getDefaultDataProp($name);
+        return (int) $this->data->$name;
+      case 'parent':
+      case 'menuStatus':
+      case 'private':
+        if ($this->id != (string) $this->data->url) return $this->getDefaultDataProp($name); 
+      default: return (string) $this->data->$name;
+    }
+  }
+  
+  private function getDefaultDataProp($name) {
+    if (!$this->defdata) {
+      $this->defdata = getXML(GSDATAPAGESPATH . $this->id . '.xml');
+      if (!$this->defdata) return null;
+    }
+    switch ($name) {
+      case 'menuOrder': 
+        return (int) $this->defdata->$name;
+      default:
+        return (string) $this->defdata->$name;
     }
   }
   
@@ -202,13 +223,13 @@ class I18nSearchIndexer {
     
   private function indexPages() {
     global $filters;
+    $private_pages = array();
     $dir_handle = @opendir(GSDATAPAGESPATH) or die("Unable to open pages directory");
     while ($filename = readdir($dir_handle)) {
       if (strrpos($filename,'.xml') === strlen($filename)-4 && !is_dir(GSDATAPAGESPATH . $filename) ) {
         $pagedata = getXML(GSDATAPAGESPATH . $filename);
-        $private = (string) $pagedata->private;
-        if ($private == 'Y') continue;
         $item = new I18nSearchPageItem($pagedata);
+        if ($item->private == 'Y') continue;
         // execute filter, but ignore return value
         foreach ($filters as $filter)  {
           if ($filter['filter'] == I18N_FILTER_INDEX_PAGE) {
