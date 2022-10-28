@@ -5,7 +5,7 @@
 # +--------------------------------------------------------------------+
 define('CACHE_SECONDS', 3600*24); // for how long images should be cached
 
-$infile = preg_replace('/\.+\//', '', $_GET['p']); // dir traversal
+$infile = preg_replace('/\.+\//', '', $_GET['p']);
 $maxWidth = @$_GET['w'];
 $maxHeight = @$_GET['h'];
 $crop = @$_GET['c'] && $maxWidth && $maxHeight;

@@ -176,7 +176,7 @@ class I18nSpecialPages {
           if (!$first) echo $separator; else $first = false;
           if ($slug) {
             $url = function_exists('find_i18n_url') ? find_i18n_url($slug,null) : find_url($slug,null);
-            $url .= '?tags='.urlencode($tag).(!$all && $type ? ' _special_'.urlencode($type) : '');
+            $url .= '?tags='.urlencode(str_replace(" ","_",$tag)).(!$all && $type ? ' _special_'.urlencode($type) : '');
             echo '<a href="'.htmlspecialchars($url).'">'.htmlspecialchars($tag).'</a>';
           } else {
             echo htmlspecialchars($tag);

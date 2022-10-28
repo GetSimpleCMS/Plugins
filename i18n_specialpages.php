@@ -2,7 +2,7 @@
 /*
 Plugin Name: I18N Special Pages
 Description: Define, edit and display customized special pages (I18N enabled!)
-Version: 1.3.1
+Version: 1.3.5
 Author: Martin Vlcek
 Author URI: http://mvlcek.bplaced.net
 
@@ -63,7 +63,7 @@ if (basename($_SERVER['PHP_SELF']) == 'load.php' && @$_GET['id'] == 'i18n_specia
 register_plugin(
   $thisfile, 
   'I18N Special Pages',  
-  '1.3.1',    
+  '1.3.5',    
   'Martin Vlcek',
   'http://mvlcek.bplaced.net', 
   'Define special (custom) fields for page categories and provide customized editing and displaying (I18N enabled)',
@@ -145,6 +145,10 @@ function i18n_specialpages_search_index($item) {
         $name = @$field['name'];
         if (@$field['type'] == 'wysiwyg') {
           $item->addContent($name, html_entity_decode(strip_tags($item->$name), ENT_QUOTES, 'UTF-8'));
+        } else if (@$field['type'] == 'checkbox') {
+          if ($item->$name) {
+            $item->addTags($name, array($name));
+          }
         } else if ((string) $field['index'] == '2') {
           $item->addTags($name, array(html_entity_decode($item->$name, ENT_QUOTES, 'UTF-8')));
         } else {

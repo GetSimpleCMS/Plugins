@@ -9,11 +9,10 @@
   if (!$loggedin) die;
   include('../../../admin/inc/theme_functions.php');
   i18n_merge('i18n_specialpages') || i18n_merge('i18n_specialpages', 'en');
-  $func = @$_GET['func'];
-
-  $path_parts = pathinfo($_SERVER['PHP_SELF']);
-  $dir = str_replace("/plugins/i18n_specialpages/browser", "", $path_parts['dirname']);
-  $sitepath = "http://".$_SERVER['SERVER_NAME'].($dir == '/' ? "" : $dir)."/";
+  $func = preg_replace('/[^\w]/', '', @$_GET['func']);
+  
+  global $SITEURL;
+  $sitepath = (string) $SITEURL;
 
   $isI18N = @$_GET['i18n'];
   $pages = array();

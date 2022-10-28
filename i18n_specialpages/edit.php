@@ -42,34 +42,34 @@
       $i++;
       $key = strtolower($def['name']);
       $label = $def['label'];
-  		$type = $def['type'];
+      $type = $def['type'];
       $value = htmlspecialchars($id ? (isset($data_edit->$key) ? $data_edit->$key : '') : (isset($def['value']) ? $def['value'] : ''), ENT_QUOTES);
-  		if ($col == 0) {
+      if ($col == 0) {
         echo '<tr>';
       } else if ($type == 'textfull' || $type == 'textarea' || $type == 'image' || $type == 'link' || $type == 'wysiwyg' || $type == 'file') {
         echo '<td></td></tr><tr>';
       }
-  		switch ($type){
-  			case 'textfull': // draw a full width TextBox
-  				echo '<td colspan="2"><b>'.$label.':</b><br />';
-  				echo '<input class="text" type="text" style="width:602px;" id="post-sp-'.$key.'" name="post-sp-'.$key.'" value="'.$value.'" /></td>'; 
+      switch ($type){
+        case 'textfull': // draw a full width TextBox
+          echo '<td colspan="2"><b>'.$label.':</b><br />';
+          echo '<input class="text" type="text" style="width:602px;" id="post-sp-'.$key.'" name="post-sp-'.$key.'" value="'.$value.'" /></td>'; 
           $col += 2;
-  			  break; 
-  			case 'dropdown':
-  				echo '<td><b>'.$label.':</b><br />';
-  				echo '<select id="post-sp-'.$key.'" name="post-sp-'.$key.'" class="text" style="width:295px">';
+          break; 
+        case 'dropdown':
+          echo '<td><b>'.$label.':</b><br />';
+          echo '<select id="post-sp-'.$key.'" name="post-sp-'.$key.'" class="text" style="width:295px">';
           foreach ($def['options'] as $option) {
             $attrs = $value == $option ? ' selected="selected"' : '';
             echo '<option'.$attrs.'>'.$option.'</option>';
           }
           echo '</select></td>';
           $col++;
-  				break;
+          break;
         case 'checkbox':
-  				echo '<td><b>'.$label.'?</b> &nbsp;&nbsp;&nbsp;';
-          echo '<input type="checkbox" id="post-sp-'.$key.'" name="post-sp-'.$key.'" value="on" '.($value ? 'checked="checked"' : '').'/></td>'; 
+          echo '<td><b>'.$label.'?</b> &nbsp;&nbsp;&nbsp;';
+          echo '<input type="checkbox" id="post-sp-'.$key.'" name="post-sp-'.$key.'" value="on" '.($value ? 'checked="checked"' : '').' style="width:auto;"/></td>'; 
           $col++;
-    			break; 
+          break; 
         case "textarea":
           echo '<td colspan="2"><b>'.$label.':</b><br />';
           echo '<textarea id="post-sp-'.$key.'" name="post-sp-'.$key.'" style="width:602px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></td>';
@@ -89,8 +89,8 @@
           break;
         case 'link':
           $w = 500;
-  				echo '<td colspan="2"><b>'.$label.':</b><br />';
-  				echo '<input class="text" type="text" style="width:'.$w.'px;" id="post-sp-'.$key.'" name="post-sp-'.$key.'" value="'.$value.'" />';
+          echo '<td colspan="2"><b>'.$label.':</b><br />';
+          echo '<input class="text" type="text" style="width:'.$w.'px;" id="post-sp-'.$key.'" name="post-sp-'.$key.'" value="'.$value.'" />';
           echo ' <span class="edit-nav"><a id="browse-'.$key.'" href="#">'.i18n_r('i18n_specialpages/BROWSE_PAGES').'</a></span>';
           echo '</td>'; 
           $col += 2;
@@ -107,12 +107,12 @@
             });
           </script>
           <?php
-    			break; 
+          break; 
         case 'image':
         case 'file':
           $w = 500;
-  				echo '<td colspan="2"><b>'.$label.':</b><br />';
-  				echo '<input class="text" type="text" style="width:'.$w.'px;" id="post-sp-'.$key.'" name="post-sp-'.$key.'" value="'.$value.'" />';
+          echo '<td colspan="2"><b>'.$label.':</b><br />';
+          echo '<input class="text" type="text" style="width:'.$w.'px;" id="post-sp-'.$key.'" name="post-sp-'.$key.'" value="'.$value.'" />';
           echo ' <span class="edit-nav"><a id="browse-'.$key.'" href="#">'.($type=='image' ? i18n_r('i18n_specialpages/BROWSE_IMAGES') : i18n_r('i18n_specialpages/BROWSE_FILES')).'</a></span>';
           echo '</td>'; 
           $col += 2;
@@ -129,19 +129,19 @@
             });
           </script>
           <?php
-    			break; 
-  			case 'text':
+          break; 
+        case 'text':
         default:
-  				echo '<td><b>'.$label.':</b><br />';
-  				echo '<input class="text short" type="text" style="width:295px;" id="post-sp-'.$key.'" name="post-sp-'.$key.'" value="'.$value.'" /></td>'; 
+          echo '<td><b>'.$label.':</b><br />';
+          echo '<input class="text short" type="text" style="width:295px;" id="post-sp-'.$key.'" name="post-sp-'.$key.'" value="'.$value.'" /></td>'; 
           $col++;
-    			break; 
-  		}
-  		if ($col >= 2) {
+          break; 
+      }
+      if ($col >= 2) {
         echo "</tr>";
         $col = 0;
       }
-  	}		
+    }
     if ($col == 1) echo "<td></td></tr>\r\n";
     echo "</tbody></table>\r\n";
   }

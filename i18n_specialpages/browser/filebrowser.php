@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Basic File Browser for I18N Custom Fields
  *
@@ -16,15 +17,13 @@ if (isset($_GET['path'])) {
 }
 $path = tsl($path);
 
+global $SITEURL;
 // check if host uses Linux (used for displaying permissions
 $isUnixHost = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? false : true);
-$path_parts = pathinfo($_SERVER['PHP_SELF']);
-$host = $_SERVER['SERVER_NAME'] . ($_SERVER['SERVER_PORT'] != '80' ? ':'.$_SERVER['SERVER_PORT'] : '');
-$dir = str_replace("/plugins/i18n_specialpages/browser", "", $path_parts['dirname']);
-$fullPath = htmlentities("http://".$host.($dir == '/' ? "" : $dir)."/data/uploads/", ENT_QUOTES);
-$sitepath = htmlentities("http://".$host.($dir == '/' ? "" : $dir)."/", ENT_QUOTES);
+$fullPath = htmlentities((string) $SITEURL."data/uploads/", ENT_QUOTES);
+$sitepath = htmlentities((string) $SITEURL, ENT_QUOTES);
 
-$func = @$_GET['func'];
+$func = preg_replace('/[^\w]/', '', @$_GET['func']);
 $type = @$_GET['type'];
 
 if(!defined('IN_GS')){ die('you cannot load this page directly.'); }

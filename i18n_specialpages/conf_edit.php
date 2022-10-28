@@ -37,7 +37,7 @@
           $emptyname = true;
         } else if (in_array($_POST['cf_'.$i.'_name'], $stdfields)) {
           $names[] = $_POST['cf_'.$i.'_name'];
-        } else if (!preg_match('/^[A-Za-z0-9-]+$/', $_POST['cf_'.$i.'_name'])) {
+        } else if (!preg_match('/^[A-Za-z0-9_-]+$/', $_POST['cf_'.$i.'_name'])) {
           $invalidname = true;
         }
         if (!$_POST['cf_'.$i.'_label']) {
@@ -107,7 +107,7 @@
               $item->addChild('option')->addCData($option);
             } 
           }
-          if (@$_POST['cf_'.$i.'_index'] == '1' || @$_POST['cf_'.$i.'_index'] == '2') {
+          if (@$_POST['cf_'.$i.'_index'] == '1' || @$_POST['cf_'.$i.'_index'] == '2' || @$_POST['cf_'.$i.'_index'] == '3') {
             $item->addChild('index', $_POST['cf_'.$i.'_index']);
           }
         }
@@ -470,11 +470,23 @@
       var $index = $(e.target).closest('tr').find('[name$=_index]');
       if (val == 'text' || val == 'dropdown') {
         $index.show();
+        $index.find('[value=1]').show();
         $index.find('[value=2]').show();
+        $index.find('[value=3]').hide();
+        if ($index.val() == 3) $index.val('');
       } else if (val == 'textfull' || val == 'textarea' || val == 'wysiwyg') {
         $index.show();
+        $index.find('[value=1]').show();
         $index.find('[value=2]').hide();
-      } else {
+        $index.find('[value=3]').hide();
+        if ($index.val() != 1) $index.val('');
+			} else if (val == 'checkbox') {
+        $index.show();
+        $index.find('[value=1]').hide();
+        $index.find('[value=2]').hide();
+        $index.find('[value=3]').show();
+        if ($index.val() != 3) $index.val('');
+			} else {
         $index.val('').hide();
       }
 <?php } ?>
@@ -566,7 +578,7 @@
 
 function i18n_specialpages_confline($i, $def, $class='', $issearch) {
   $isdropdown = @$def['type'] == 'dropdown';
-  $indexable = !@$def['type'] || in_array(@$def['type'],array('text','textfull','dropdown','textarea','wysiwyg'));
+  $indexable = !@$def['type'] || in_array(@$def['type'],array('text','textfull','dropdown','textarea','wysiwyg','checkbox'));
   $options = $isdropdown && count($def['options']) > 0 ? implode("\r\n", $def['options']) : '';
   if (substr($options,0,2) == "\r\n") $options = "\r\n".$options; // textarea removes first line break!
 ?>
@@ -593,13 +605,11 @@ function i18n_specialpages_confline($i, $def, $class='', $issearch) {
         </td>
 <?php if ($issearch) { ?>
         <td>
-          <!--
-          <input type="checkbox" name="cf_<?php echo $i; ?>_index" <?php echo @$def['index'] ? 'checked="checked"' : ''; ?> <?php echo !$indexable ? 'style="display:none"' : ''; ?> />
-          -->
           <select name="cf_<?php echo $i; ?>_index" class="text short" style="width:65px;padding:2px;<?php if (!$indexable) echo 'display:none;'; ?>" >
             <option value="" <?php if (!@$def['index']) echo 'selected="selected"'; ?> ></option>
-            <option value="1" <?php if ((string) @$def['index'] == '1') echo 'selected="selected"'; ?> >words</option>
-            <option value="2" <?php if ((string) @$def['index'] == '2') echo 'selected="selected"'; ?> <?php if (@$def['type']!='text' && @$def['type']!='dropdown') echo 'style="display:none"'; ?> >as tag</option>
+            <option value="1" <?php if ((string) @$def['index'] == '1') echo 'selected="selected"'; ?> <?php if (@$def['type']=='checkbox') echo 'style="display:none"'; ?> ><?php i18n('i18n_specialpages/INDEX_WORDS'); ?></option>
+            <option value="2" <?php if ((string) @$def['index'] == '2') echo 'selected="selected"'; ?> <?php if (@$def['type']!='text' && @$def['type']!='dropdown') echo 'style="display:none"'; ?> ><?php i18n('i18n_specialpages/INDEX_AS_TAG'); ?></option>
+            <option value="3" <?php if ((string) @$def['index'] == '3') echo 'selected="selected"'; ?> <?php if (@$def['type']!='checkbox') echo 'style="display:none"'; ?> ><?php i18n('i18n_specialpages/INDEX_NAME_AS_TAG'); ?></option>
           </select>
         </td>
 <?php } ?>

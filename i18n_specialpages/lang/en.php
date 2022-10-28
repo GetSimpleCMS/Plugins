@@ -85,5 +85,8 @@ $i18n = array(
     'VIEW_HIERARCHICAL' => "hierarchical",
     'VIEW_PUBDATE' => "by date",
     'VIEW_TITLE' => "by title",
-    'WYSIWYG_EDITOR' => "WYSIWYG editor"
+    'WYSIWYG_EDITOR' => "WYSIWYG editor",
+    'INDEX_AS_TAG' => "as tag",
+    'INDEX_NAME_AS_TAG' => "name as tag",
+    'INDEX_WORDS' => "words"
 );
