@@ -2,7 +2,7 @@
 /*
 Plugin Name: I18N Custom Fields
 Description: Custom Fields (I18N enabled)
-Version: 1.8.1
+Version: 1.9.3
 Author: Martin Vlcek
 Author URI: http://mvlcek.bplaced.net
 
@@ -26,7 +26,7 @@ define('I18N_CUSTOMFIELDS_FILE', 'customfields.xml');
 register_plugin(
 	$thisfile,
 	'I18N Custom Fields',
-	'1.8.1',
+	'1.9.3',
   'Martin Vlcek',
   'http://mvlcek.bplaced.net/',
   'Custom fields for pages (I18N enabled) - based on Mike Swan\'s plugin',
@@ -34,7 +34,6 @@ register_plugin(
 	'i18n_customfields_configure'
 );
 
-require_once(GSPLUGINPATH.'i18n_common/common.php');
 i18n_merge('i18n_customfields') || i18n_merge('i18n_customfields', 'en_US');
 
 add_action('index-pretemplate', 'i18n_get_custom_fields'); // add hook to make custom field values available to theme
@@ -52,6 +51,7 @@ if (!i18n_customfields_is_frontend() && i18n_customfields_gsversion() == '3.0') 
 
 $i18n_customfield_defs = null;
 $i18n_customfield_types = null;
+$customfields = null;
 
 function i18n_customfields_is_frontend() {
   return function_exists('get_site_url');
@@ -64,7 +64,7 @@ function i18n_customfields_gsversion() {
 
 function i18n_customfield_defs() {
 	global $i18n_customfield_defs, $i18n_customfield_types;
-  if ($i18n_customfield_defs == null) {
+  if ($i18n_customfield_defs === null) {
     $i18n_customfield_defs = array();
     $i18n_customfield_types = array();
     $file = GSDATAOTHERPATH . I18N_CUSTOMFIELDS_FILE;
@@ -96,7 +96,7 @@ function i18n_customfield_defs() {
 
 function i18n_customfield_types() {
   global $i18n_customfield_types;
-  if ($i18n_customfield_types == null) i18n_customfield_defs();
+  if ($i18n_customfield_types === null) i18n_customfield_defs();
   return $i18n_customfield_types;
 }
 
@@ -125,6 +125,7 @@ function i18n_customfields_save(){
 
 function i18n_get_custom_fields() {
   global $customfields, $data_index, $data_index_orig;
+  if ($customfields) return;
   if (function_exists('i18n_init')) {
     i18n_init(); // make sure that I18N is initialized
     if (isset($data_index_orig)) i18n_get_custom_fields_from($data_index_orig);
@@ -162,6 +163,14 @@ function return_custom_field($name, $default='') {
   global $customfields;
   return @$customfields[$name] ? $customfields[$name] : $default;
 } 
+
+function return_custom_field_options($name) {
+  $defs = i18n_customfield_defs();
+  foreach ($defs as $def) {
+    if ($def['key'] == $name) return @$def['options'];
+  }
+  return null;
+}
 
 if (!function_exists('get_page_creation_date')) {
   function get_page_creation_date($i = "l, F jS, Y - g:i A", $echo=true) {
@@ -210,6 +219,10 @@ function i18n_customfields_index($item) {
       $name = @$def['key'];
       if (@$def['type'] == 'textarea') {
         $item->addContent($name, html_entity_decode(strip_tags($item->$name), ENT_QUOTES, 'UTF-8'));
+      } else if (@$def['type'] == 'checkbox') {
+      	if ($item->$name) {
+      		$item->addTags($name, array($name));
+      	}
       } else {
         $item->addContent($name, html_entity_decode($item->$name, ENT_QUOTES, 'UTF-8'));
       }

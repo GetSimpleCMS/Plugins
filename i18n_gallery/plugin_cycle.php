@@ -1,6 +1,6 @@
 <?php
 i18n_gallery_register('cycle', 'cycle', 
-  '<strong>cylce</strong> is a slideshow plugin that supports many different types of transition effects.<br/>'.
+  '<strong>cycle</strong> is a slideshow plugin that supports many different types of transition effects.<br/>'.
   'License: MIT and GPL<br/>'.
   '<a target="_blank" href="http://jquery.malsup.com/cycle/">http://jquery.malsup.com/cycle/</a>',
   'i18n_gallery_cycle_edit', 'i18n_gallery_cycle_header', 'i18n_gallery_cycle_content');
@@ -82,7 +82,7 @@ function i18n_gallery_cycle_header($gallery) {
   global $SITEURL;
   if (i18n_gallery_check($gallery,'jquery') && i18n_gallery_needs_include('jquery.js')) {
 ?>
-    <script type="text/javascript" src="<?php echo i18n_gallery_site_link(); ?>plugins/i18n_gallery/js/jquery-1.4.3.min.js"></script>
+    <script type="text/javascript" src="<?php echo i18n_gallery_site_link(); ?>plugins/i18n_gallery/js/jquery-1.11.2.min.js"></script>
 <?php
   }
   if (i18n_gallery_check($gallery,'js') && i18n_gallery_needs_include('cycle.js')) {
@@ -152,7 +152,7 @@ function i18n_gallery_cycle_header($gallery) {
       .gallery-cycle .gallery-control-numbers a {
         font-size: 18px;
         border: 0 none;
-        text-decoration: none;
+        text-decoration: none;cylce
         color: #999999;
         padding: 0px 5px;
         margin: 0px 2px;

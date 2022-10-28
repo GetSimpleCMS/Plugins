@@ -227,12 +227,12 @@ if (!@$gallery['type']) $gallery['type'] = @$settings['type'] ? $settings['type'
     }
 ?>
           <tr>
-            <td><img src="<?php echo $tlink; ?>"/></td>
+            <td><a href="#" class="setimage"><img src="<?php echo $tlink; ?>"/></a></td>
             <td>
               <input type="hidden" name="post-item_<?php echo $i; ?>_filename" value="<?php echo htmlspecialchars($item['filename']); ?>"/>
-              <span style="float:left;width:<?php echo 400-$w; ?>px"><?php echo htmlspecialchars($item['filename']); ?></span>
-              <span style="float:left;width:120px;"><?php echo $item['width'] . " x " . $item['height']; ?></span>
-              <span style="float:left;width:80px;text-align:right"><?php echo $s; ?></span> 
+              <span class="imagefile" style="float:left;width:<?php echo 400-$w; ?>px"><?php echo htmlspecialchars($item['filename']); ?></span>
+              <span class="imagesize" style="float:left;width:120px;"><?php echo $item['width'] . " x " . $item['height']; ?></span>
+              <span class="imagebytes" style="float:left;width:80px;text-align:right"><?php echo $s; ?></span> 
               <input type="text" class="text lang lang_" name="post-item_<?php echo $i; ?>_title" value="<?php echo htmlspecialchars(@$item['title']); ?>" 
                 title="<?php echo htmlspecialchars(i18n_r('i18n_gallery/TITLE')); ?>" style="clear:both;float:left;width:<?php echo 383-$w; ?>px;margin-right:5px;"/>
 <?php if (count($languages) > 0) foreach ($languages as $language) { ?>
@@ -276,23 +276,24 @@ if (!@$gallery['type']) $gallery['type'] = @$settings['type'] ? $settings['type'
     <script type="text/javascript" src="../plugins/i18n_gallery/js/jquery-ui.sort.min.js"></script>
     <script type="text/javascript" src="../plugins/i18n_gallery/js/jquery.autogrow.js"></script>
     <script type="text/javascript">
+      function getBytesAsText(size) {
+        if (size >= 1000000) {
+          return Math.ceil(size / 1024 / 1024) + ' MB';
+        } else if (size >= 1000) {
+          return Math.ceil(size / 1024) + ' kB';
+        } else {
+          return size + ' B';
+        }
+      }
       function addImage(filename, size, width, height, title, tags, description) {
         var i = ($('#editgallery tbody tr').size()-1);
-        var s;
-        if (size >= 1000000) {
-          s = Math.ceil(size / 1024 / 1024) + ' MB';
-        } else if (size >= 1000) {
-          s = Math.ceil(size / 1024) + ' kB';
-        } else {
-          s = size + ' B';
-        }
         var html = '<tr>';
-        html += '<td><img src="../plugins/i18n_gallery/browser/pic.php?p='+escape(filename)+'&amp;w=<?php echo $w; ?>&amp;h=<?php echo $h; ?>"/></td>\n';
+        html += '<td><a href="#" class="setimage"><img src="../plugins/i18n_gallery/browser/pic.php?p='+escape(filename)+'&amp;w=<?php echo $w; ?>&amp;h=<?php echo $h; ?>"/></a></td>\n';
         html += '<td>';
         html += '<input type="hidden" name="post-item_'+i+'_filename" value=""/>';
-        html += '<span style="float:left;width:<?php echo 400-$w; ?>px">' + $('<div/>').text(filename).html() + '</span>';
-        html += '<span style="float:left;width:120px;">' + width + ' x ' + height + '</span>';
-        html += '<span style="float:left;width:80px;text-align:right">' + s + '</span>'; 
+        html += '<span class="imagefile" style="float:left;width:<?php echo 400-$w; ?>px">' + $('<div/>').text(filename).html() + '</span>';
+        html += '<span class="imagesize" style="float:left;width:120px;">' + width + ' x ' + height + '</span>';
+        html += '<span class="imagebytes" style="float:left;width:80px;text-align:right">' + getBytesAsText(size) + '</span>'; 
         html += '<input type="text" class="text lang lang_" name="post-item_'+i+'_title" value="" style="clear:both;float:left;width:<?php echo 383-$w; ?>px;margin-right:5px;"/>';
 <?php if (count($languages) > 0) foreach ($languages as $language) { ?>
         html += '<input type="text" class="text lang lang_<?php echo $language; ?>" name="post-item_'+i+'_title<?php echo $language ? '_'.$language : ''; ?>" value="" style="clear:both;float:left;width:<?php echo 383-$w; ?>px;margin-right:5px;display:none;"/>';
@@ -316,6 +317,23 @@ if (!@$gallery['type']) $gallery['type'] = @$settings['type'] ? $settings['type'
         if (description) $tr.find('[name$=description]').val(description);
         $tr.find('textarea').autogrow({ expandTolerance:1 });
         $tr.find('.delete a').click(deleteRow);
+        $tr.find('a.setimage').click(setImage);
+      }
+      var currentRow = null;
+      function replaceImage(filename, size, width, height, title, tags, description) {
+        var imagefile = '../plugins/i18n_gallery/browser/pic.php?p='+escape(filename)+'&w=<?php echo $w; ?>&h=<?php echo $h; ?>';
+      	currentRow.find('img').attr('src', imagefile);
+      	currentRow.find('.imagefile').text(filename);
+      	currentRow.find('.imagesize').text(width + ' x ' + height);
+      	currentRow.find('.imagebytes').text(getBytesAsText(size)); 
+        currentRow.find('[name$=filename]').val(filename);
+        renumberRows();
+      }
+      function setImage(e) {
+        currentRow = $(e.target).closest('tr');
+        window.open('<?php echo $SITEURL; ?>plugins/i18n_gallery/browser/imagebrowser.php?func=replaceImage&w=<?php echo $w; ?>&h=<?php echo $h; ?>&autoclose=1', 
+                'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
+        return false;
       }
       function deleteRow(e) {
         $(e.target).closest('tr').remove();
@@ -336,6 +354,8 @@ if (!@$gallery['type']) $gallery['type'] = @$settings['type'] ? $settings['type'
                       'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
           return false;
         });
+        $('#editgallery a.setimage').click(setImage);
+        
         $('#editgallery textarea').autogrow({ expandTolerance:1 });
         $('#editgallery .delete a').click(deleteRow);
         $('#editgallery tbody').sortable({

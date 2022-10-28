@@ -139,7 +139,7 @@
       if (val == 'dropdown') $ta.css('display','inline'); else $ta.css('display','none');
 <?php if ($issearch) { ?>
       var $cb = $(e.target).closest('tr').find('input[type=checkbox]');
-      if (val == 'text' || val == 'textfull' || val == 'dropdown' || val == 'textarea') {
+      if (val == 'text' || val == 'textfull' || val == 'dropdown' || val == 'textarea' || val == 'checkbox') {
         $cb.show();
       } else {
         $cb.attr('checked',false).hide();
@@ -169,7 +169,7 @@
 
 function i18n_customfields_confline($i, $def, $class='', $issearch) {
   $isdropdown = @$def['type'] == 'dropdown';
-  $indexable = !@$def['type'] || in_array(@$def['type'],array('text','textfull','dropdown','textarea'));
+  $indexable = !@$def['type'] || in_array(@$def['type'],array('text','textfull','dropdown','textarea', 'checkbox'));
   $options = "\r\n";
   if ($isdropdown && count($def['options']) > 0) {
     foreach ($def['options'] as $option) $options .= $option . "\r\n";
@@ -186,6 +186,7 @@ function i18n_customfields_confline($i, $def, $class='', $issearch) {
             <option value="checkbox" <?php echo @$def['type']=='checkbox' ? 'selected="selected"' : ''; ?> ><?php i18n('i18n_customfields/CHECKBOX'); ?></option>
             <option value="textarea" <?php echo @$def['type']=='textarea' ? 'selected="selected"' : ''; ?> ><?php i18n('i18n_customfields/WYSIWYG_EDITOR'); ?></option>
             <option value="image" <?php echo @$def['type']=='image' ? 'selected="selected"' : ''; ?> ><?php i18n('i18n_customfields/IMAGE'); ?></option>
+            <option value="file" <?php echo @$def['type']=='file' ? 'selected="selected"' : ''; ?> ><?php i18n('i18n_customfields/FILE'); ?></option>
             <option value="link" <?php echo @$def['type']=='link' ? 'selected="selected"' : ''; ?> ><?php i18n('i18n_customfields/LINK'); ?></option>
           </select>
           <textarea class="text" style="width:170px;height:50px;padding:2px;<?php echo !$isdropdown ? 'display:none' : ''; ?>" name="cf_<?php echo $i; ?>_options"><?php echo $options; ?></textarea> 

@@ -2,6 +2,7 @@
   global $USR;
   require_once(GSPLUGINPATH.'i18n_base/basic.class.php');
   $success = false;
+  $is31 = function_exists('generate_sitemap');
   if (isset($_POST['save'])) {
     if (preg_match('/[a-z][a-z]/i', @$_POST['default-language'])) {
       I18nBasic::setProperty(I18N_PROP_DEFAULT_LANGUAGE, $_POST['default-language']);
@@ -68,10 +69,12 @@
   sort($languages);
   // sort pages
   $view = @$_REQUEST['view'];
+  $sortfield = @$_REQUEST['sort'];
   if (!$view) {
     $view = I18nBasic::getProperty(I18N_PROP_PAGES_VIEW, 'hierarchical');
-  } else if ($view != I18nBasic::getProperty(I18N_PROP_PAGES_VIEW, null)) {
-    I18nBasic::setProperty(I18N_PROP_PAGES_VIEW, $view);
+    $sortfield = I18nBasic::getProperty(I18N_PROP_PAGES_SORT, 'sort');
+  } else {
+    I18nBasic::setProperties(array(I18N_PROP_PAGES_VIEW => $view, I18N_PROP_PAGES_SORT => $sortfield));
   }
   if (count($pages) > 0) {
     if ($view == 'hierarchical') {
@@ -83,8 +86,11 @@
         $level = -1;
         $sort = '';
         for ($p = $page; $p; $p = $p['parent'] ? $pages[$p['parent']] : null) {
-          $sort = sprintf('%03d',$p['menuOrder']).$p['title'].' '.$sort;
-          if ($p['parent']) $pages[$p['parent']]['hasChildren'] = true;
+        	$sort = sprintf('%03d',$p['menuOrder']).$p['title'].' '.$sort;
+          if ($sortfield) {
+          	$sort = @$p[$sortfield].' '.$sort;
+        	}
+        	if ($p['parent']) $pages[$p['parent']]['hasChildren'] = true;
           if ($level >= 0 && !@$p['open']) { $page['invisible'] = true; unset($page['open']); }
           $level++;
         }
@@ -92,6 +98,9 @@
         $page['sort'] = $sort;
       } else {
         $page['sort'] = $page['title'];
+        if ($sortfield) {
+        	$page['sort'] = @$page[$sortfield].' '.$page['sort'];
+       	}
       }
     }
   }
@@ -100,25 +109,34 @@
   $counter = count($pages);
   // display overview
   $link = "load.php?id=i18n_base";
+  $viewlink = $link . ($isHierarchical ? '&view=flat&sort=title' : '&view=hierarchical&sort='.$sortfield);
+  $titlelink = $link . ($sortfield == 'title' ? '&view=hierarchical' : '&view=hierarchical&sort=title');
+  $singleLanguage = defined('I18N_SINGLE_LANGUAGE') && I18N_SINGLE_LANGUAGE && count($languages) <= 0;
 ?>
 			<h3 class="floated" style="float:left"><?php echo i18n_r('PAGE_MANAGEMENT'); ?></h3>
 			<div class="edit-nav" >
         <p>
-          <a href="<?php echo $link; ?>&view=hierarchical" <?php echo $view=='hierarchical' ? 'class="current"' : ''; ?> ><?php echo i18n_r('i18n_base/VIEW_HIERARCHICAL'); ?></a>
-          <a href="<?php echo $link; ?>&view=title" <?php echo $view=='title' ? 'class="current"' : ''; ?> ><?php echo i18n_r('i18n_base/VIEW_TITLE'); ?></a>
+          <a href="<?php echo $viewlink; ?>" <?php echo $isHierarchical ? 'class="current"' : ''; ?> ><?php echo i18n_r('i18n_base/VIEW_HIERARCHICAL'); ?></a>
+          <a href="<?php echo $titlelink; ?>" <?php echo !$isHierarchical || $sortfield == 'title' ? 'class="current"' : ''; ?> ><?php echo i18n_r('i18n_base/VIEW_TITLE'); ?></a>
+          <?php if ($is31) { ?>
+          <a href="#" id="show-characters" accesskey="<?php echo find_accesskey(i18n_r('TOGGLE_STATUS'));?>" ><?php i18n('TOGGLE_STATUS'); ?></a>          
+          <?php } else { ?>
           <?php echo i18n_r('TOGGLE_STATUS'); ?> &nbsp;<input type="checkbox" id="show-characters" value="" />
+          <?php } ?>
           &nbsp;&nbsp;
           <?php echo i18n_r('i18n_base/FILTER'); ?>: 
           <input type="text" id="filter" value="" class="_text" style="width:80px" title="<?php echo htmlspecialchars(i18n_r('i18n_base/FILTER_TITLE'));?>"/>
         </p>
         <div class="clear" ></div>
       </div>
-      <p><?php echo i18n_r('i18n_base/NEW_LANGUAGE_DESCR'); ?></p>
-      <form action="<?php echo $link; ?>" method="post" style="margin-bottom:10px">
-        <span><?php i18n('i18n_base/DEFAULT_LANGUAGE_DESCR'); ?></span> 
-        <input type="text" name="default-language" value="<?php echo $deflang; ?>" maxlength="2" style="width:2em;"/> &nbsp; 
-        <input type="submit" name="save" value="<?php i18n('i18n_base/SAVE_DEFAULT_LANGUAGE'); ?>"/> 
-      </form>
+      <?php if (!$singleLanguage) { ?>
+        <p><?php echo i18n_r('i18n_base/NEW_LANGUAGE_DESCR'); ?></p>
+        <form action="<?php echo $link; ?>" method="post" style="margin-bottom:10px">
+          <span><?php i18n('i18n_base/DEFAULT_LANGUAGE_DESCR'); ?></span> 
+          <input type="text" name="default-language" value="<?php echo $deflang; ?>" maxlength="2" style="width:2em;"/> &nbsp; 
+          <input type="submit" name="save" value="<?php i18n('i18n_base/SAVE_DEFAULT_LANGUAGE'); ?>"/> 
+        </form>
+      <?php } ?>
 
       <a id="closeall" class="cancel" href="#"><?php i18n('i18n_base/CLOSE_ALL'); ?></a>
       <a id="openall" class="cancel" href="#"><?php i18n('i18n_base/OPEN_ALL'); ?></a>
@@ -156,7 +174,7 @@
 	            <a title="<?php echo i18n_r('VIEWPAGE_TITLE').': '. stripslashes($page['title']); ?>" target="_blank" href="<?php echo find_i18n_url($page['url'],$page['parent'],$deflang); ?>">#</a>
 	          </td>
 	          <td class="delete" >
-              <a class="i18n-delconfirm" href="deletefile.php?id=<?php echo $page['url']; ?>&nonce=<?php echo get_nonce("delete", "deletefile.php"); ?>" title="<?php echo i18n_r('DELETEPAGE_TITLE').': '.stripslashes($page['title']); ?>">X</a>
+              <a class="i18n-delconfirm" href="deletefile.php?id=<?php echo $page['url']; ?>&nonce=<?php echo get_nonce("delete", "deletefile.php"); ?>" title="<?php echo i18n_r('DELETEPAGE_TITLE').': '.stripslashes($page['title']); ?>"><?php echo $is31 ? '&times;' : 'X' ?></a>
             </td>
         <?php
             } else {
@@ -168,7 +186,7 @@
             </td>
         <?php
             }
-            foreach ($languages as $lang) {
+            if (!$singleLanguage) foreach ($languages as $lang) {
               $params = 'newid='.$page['url'].'_'.$lang;
               $title = i18n_r('CREATE_NEW_PAGE').': ';
               if ($page['exists']) {
@@ -191,7 +209,7 @@
 	            <a title="<?php echo i18n_r('VIEWPAGE_TITLE').': '.stripslashes($variant['title']); ?>" target="_blank" href="<?php echo find_i18n_url($page['url'],$page['parent'],$lang); ?>">#</a>
 	          </td>
 	          <td class="delete" >
-              <a class="i18n-delconfirm" href="deletefile.php?id=<?php echo $variant['url']; ?>&nonce=<?php echo get_nonce("delete", "deletefile.php"); ?>" title="<?php echo i18n_r('DELETEPAGE_TITLE').': '.stripslashes($variant['title']); ?>">X</a>
+              <a class="i18n-delconfirm" href="deletefile.php?id=<?php echo $variant['url']; ?>&nonce=<?php echo get_nonce("delete", "deletefile.php"); ?>" title="<?php echo i18n_r('DELETEPAGE_TITLE').': '.stripslashes($variant['title']); ?>"><?php echo $is31 ? '&times;' : 'X' ?></a>
               <a href="edit.php?<?php echo $params; ?>" title="<?php echo $title; ?>" style="display:none">+</a>
             </td>
         <?php

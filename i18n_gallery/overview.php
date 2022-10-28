@@ -32,8 +32,8 @@ while ($filename = readdir($dir_handle)) {
   }
 }
 usort($galleries, 'i18n_gallery_compare_title');
-$viewlink = function_exists('find_i18n_url') ? find_i18n_url('gallery',null) : find_url('gallery',null);
-$viewlink .= (strpos($viewlink,'?') === false ? '?' : '&amp;') . 'name=';
+$viewlink = function_exists('find_i18n_url') ? find_i18n_url('index',null) : find_url('index',null);
+$viewlink .= (strpos($viewlink,'?') === false ? '?' : '&amp;') . 'preview-gallery&amp;name=';
 
 ?>
     <h3 class="floated" style="float:left"><?php echo i18n_r('i18n_gallery/OVERVIEW_HEADER'); ?></h3>

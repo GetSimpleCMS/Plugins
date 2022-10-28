@@ -2,7 +2,7 @@
 /*
 Plugin Name: I18N Gallery
 Description: Display image galleries (I18N enabled)
-Version: 2.1
+Version: 2.2.1
 Author: Martin Vlcek
 Author URI: http://mvlcek.bplaced.net
 */
@@ -19,7 +19,7 @@ define('I18N_GALLERY_DEFAULT_THUMB_HEIGHT', 120);
 register_plugin(
 	$thisfile, 
 	'I18N Gallery', 	
-	'2.1', 		
+	'2.2.1', 		
 	'Martin Vlcek',
 	'http://mvlcek.bplaced.net', 
 	'Display image galleries (I18N enabled)',

@@ -9,11 +9,11 @@
   if (!$loggedin) die;
   include('../../../admin/inc/theme_functions.php');
   i18n_merge('i18n_customfields') || i18n_merge('i18n_customfields', 'en_US');
-  $func = @$_GET['func'];
+  $func = preg_replace('/[^\w]/', '', @$_GET['func']);
 
+  global $SITEURL;
   $path_parts = pathinfo($_SERVER['PHP_SELF']);
-  $dir = str_replace("/plugins/i18n_customfields/browser", "", $path_parts['dirname']);
-  $sitepath = "http://".$_SERVER['SERVER_NAME'].($dir == '/' ? "" : $dir)."/";
+  $sitepath = $SITEURL;
 
   $isI18N = @$_GET['i18n'];
   $pages = array();

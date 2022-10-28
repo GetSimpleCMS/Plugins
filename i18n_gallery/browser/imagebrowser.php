@@ -140,10 +140,11 @@
   $fullPath = htmlentities("http://".$_SERVER['SERVER_NAME'].($dir == '/' ? "" : $dir)."/data/uploads/", ENT_QUOTES);
   $sitepath = htmlentities("http://".$_SERVER['SERVER_NAME'].($dir == '/' ? "" : $dir)."/", ENT_QUOTES);
 
-  $func = @$_GET['func'];
+  $func = preg_replace('/[^\w]/', '', @$_GET['func']);
   $w = (int) @$_GET['w'];
   $h = (int) @$_GET['h'];
   if (!$w && !$h) { $w = 160; $h = 120; }
+  $autoclose = @$_GET['autoclose'];
   $debug = @$_GET['debug'];
 
   global $LANG;
@@ -201,13 +202,13 @@
   <div id="maincontent">
 	  <div class="main" style="border:none;">
 		  <h3><?php i18n('UPLOADED_FILES'); ?></h3>
-      <div class="h5">/ <a href="?func=<?php echo $func; ?>&amp;w=<?php echo $w; ?>&amp;h=<?php echo $h; ?>">uploads</a> / 
+      <div class="h5">/ <a href="?func=<?php echo $func; ?>&amp;w=<?php echo $w; ?>&amp;h=<?php echo $h; ?>&amp;autoclose=<?php echo $autoclose; ?>">uploads</a> / 
 <?php 
   foreach ($pathParts as $pathPart){
 		if ($pathPart!=''){
 			$urlPath .= $pathPart;
 ?>
-        <a href="?path=<?php echo $urlPath; ?>&amp;func=<?php echo $func; ?>&amp;w=<?php echo $w; ?>&amp;h=<?php echo $h; ?>"><?php echo $pathPart; ?></a> / 
+        <a href="?path=<?php echo $urlPath; ?>&amp;func=<?php echo $func; ?>&amp;w=<?php echo $w; ?>&amp;h=<?php echo $h; ?>&autoclose=1"><?php echo $pathPart; ?></a> / 
 <?php
       $urlPath .= '/';
 		}
@@ -224,7 +225,7 @@
           <tr class="All" > 
 		        <td class="" colspan="5">
 		          <img src="../../../<?php echo $admin; ?>/template/images/folder.png" width="11" /> 
-              <a href="imagebrowser.php?path=<?php echo $p; ?>&amp;func=<?php echo $func; ?>&amp;w=<?php echo $w; ?>&amp;h=<?php echo $h; ?>" title="<?php echo $upload['name']; ?>"><strong><?php echo $upload['name']; ?></strong></a>
+              <a href="imagebrowser.php?path=<?php echo $p; ?>&amp;func=<?php echo $func; ?>&amp;w=<?php echo $w; ?>&amp;h=<?php echo $h; ?>&autoclose=1" title="<?php echo $upload['name']; ?>"><strong><?php echo $upload['name']; ?></strong></a>
 		        </td>
           </tr>
 <?php
@@ -288,6 +289,7 @@
           var item = metadata[i];
           if(window.opener){
             window.opener.<?php echo $func; ?>(item['url'], item['size'], item['width'], item['height'], item['title'], item['tags'], item['description']);
+            <?php if ($autoclose) { ?>window.close();<?php } ?>
           }
         }
         function submitAllLinks() {

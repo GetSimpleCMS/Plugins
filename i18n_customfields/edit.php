@@ -1,5 +1,29 @@
 <?php
 
+if (function_exists('return_i18n_pages')) {
+  require_once(GSPLUGINPATH.'i18n_navigation/frontend.class.php');
+}
+
+function i18n_customfields_list_pages_json() {
+  if (function_exists('find_i18n_url') && class_exists('I18nNavigationFrontend')) {
+    $slug = isset($_GET['id']) ? $_GET['id'] : (isset($_GET['newid']) ? $_GET['newid'] : '');
+    $pos = strpos($slug, '_');
+    $lang = $pos !== false ? substr($slug, $pos+1) : null;
+    $structure = I18nNavigationFrontend::getPageStructure(null, false, null, $lang);
+    $pages = array();
+    $nbsp = html_entity_decode('&nbsp;', ENT_QUOTES, 'UTF-8');
+    $lfloor = html_entity_decode('&lfloor;', ENT_QUOTES, 'UTF-8');
+    foreach ($structure as $page) {
+      $text = ($page['level'] > 0 ? str_repeat($nbsp,5*$page['level']-2).$lfloor.$nbsp : '').cl($page['title']);
+      $link = find_i18n_url($page['url'], $page['parent'], $lang ? $lang : return_i18n_default_language());
+      $pages[] = array($text, $link);
+    }
+    return json_encode($pages);
+  } else {
+    return list_pages_json();
+  }
+}
+
 function i18n_customfields_customize_ckeditor($editorvar) { // copied and modified from ckeditor_add_page_link()
 	echo "
 	// modify existing Link dialog
@@ -31,7 +55,7 @@ function i18n_customfields_customize_ckeditor($editorvar) { // copied and modifi
 				id: 'localPage_path',
 				label: 'Select page:',
 				required: true,
-				items: " . list_pages_json() . ",
+				items: " . i18n_customfields_list_pages_json() . ",
 				setup: function(data) {
 					if ( data.localPage )
 						this.setValue( data.localPage );
@@ -89,17 +113,16 @@ function i18n_customfields_customize_ckeditor($editorvar) { // copied and modifi
   $isI18N = function_exists('return_i18n_languages');
   $creDate = @$data_edit->creDate ? (string) $data_edit->creDate : (string) @$data_edit->pubDate;
   $defs = i18n_customfield_defs();
+  if ($isV3) {
+    echo '<input type="hidden" name="creDate" value="'.htmlspecialchars($creDate).'"/>';
+  } else {
+    echo '<tr style="border:0 none;margin:0;padding:0;"><td colspan="2" style="border:0 none;margin:0;padding:0;"><input type="hidden" name="creDate" value="'.htmlspecialchars($creDate).'"/></td></tr>';
+  }
   if (!$defs || count($defs) <= 0) {
-    if ($isV3) {
-      echo '<input type="hidden" name="creDate" value="'.$creDate.'"/>';
-    } else {
-      echo '<tr style="border:0 none;margin:0;padding:0;"><td colspan="2" style="border:0 none;margin:0;padding:0;"><input type="hidden" name="creDate" value="'.$creDate.'"/></td></tr>';
-    }
     return;
   } 
 	$id = @$_GET['id'];
-  if ($isV3) echo '<table class="formtable" style="clear:both;"><tbody>';
-	//echo '<tr><td><h2>'.i18n_r('i18n_customfields/CUSTOMFIELDS_TITLE').'</h2><input type="hidden" name="creDate" value="'.$creDate.'"/></td></tr>';
+  if ($isV3) echo '<table class="formtable" style="clear:both;width:100%;margin-left:0;"><tbody>';
   // Editor settings (copied from edit.php)
   if (defined('GSEDITORLANG')) { $EDLANG = GSEDITORLANG; } else {	$EDLANG = $isV3 ? i18n_r('CKEDITOR_LANG') : 'en'; }
   if (defined('GSEDITORTOOL')) { $EDTOOL = GSEDITORTOOL; } else {	$EDTOOL = 'basic'; }
@@ -124,18 +147,18 @@ function i18n_customfields_customize_ckeditor($editorvar) { // copied and modifi
 		$type = $def['type'];
     $value = htmlspecialchars($id ? (isset($data_edit->$key) ? $data_edit->$key : '') : (isset($def['value']) ? $def['value'] : ''), ENT_QUOTES);
 		if ($col == 0) {
-      echo '<tr>';
+      echo '<tr style="border:0 none;">';
     } else if ($type == 'textfull' || $type == 'textarea' || $type == 'image' || $type == 'link') {
-      echo '<td></td></tr><tr>';
+      echo '<td style="border:0 none;"></td></tr><tr>';
     }
 		switch ($type){
 			case 'textfull': // draw a full width TextBox
-				echo '<td colspan="2"><b>'.$label.':</b><br />';
+				echo '<td colspan="2" style="border:0 none;"><b>'.$label.':</b><br />';
 				echo '<input class="text" type="text" style="width:602px;" id="post-'.$key.'" name="post-'.$key.'" value="'.$value.'" /></td>'; 
         $col += 2;
 			  break; 
 			case 'dropdown':
-				echo '<td><b>'.$label.':</b><br />';
+				echo '<td style="border:0 none;"><b>'.$label.':</b><br />';
 				echo '<select id="post-'.$key.'" name="post-'.$key.'" class="text" style="width:295px">';
         foreach ($def['options'] as $option) {
           $attrs = $value == $option ? ' selected="selected"' : '';
@@ -145,12 +168,12 @@ function i18n_customfields_customize_ckeditor($editorvar) { // copied and modifi
         $col++;
 				break;
       case 'checkbox':
-				echo '<td><b>'.$label.'?</b> &nbsp;&nbsp;&nbsp;';
-        echo '<input type="checkbox" id="post-'.$key.'" name="post-'.$key.'" value="on" '.($value ? 'checked="checked"' : '').'/></td>'; 
+				echo '<td style="border:0 none;"><b>'.$label.'?</b> &nbsp;&nbsp;&nbsp;';
+        echo '<input type="checkbox" id="post-'.$key.'" name="post-'.$key.'" value="on" '.($value ? 'checked="checked"' : '').' style="width:auto;"/></td>'; 
         $col++;
   			break; 
       case "textarea":
-        echo '<td colspan="2"><b>'.$label.':</b><br />';
+        echo '<td colspan="2" style="border:0 none;"><b>'.$label.':</b><br />';
         echo '<textarea id="post-'.$key.'" name="post-'.$key.'" style="width:602px;height:200px;border: 1px solid #AAAAAA;">'.$value.'</textarea></td>';
 ?>
 <script type="text/javascript">
@@ -189,11 +212,11 @@ function i18n_customfields_customize_ckeditor($editorvar) { // copied and modifi
         break;
       case 'link':
         $w = $isV3 ? 500 : 513;
-				echo '<td colspan="2"><b>'.$label.':</b><br />';
+				echo '<td colspan="2" style="border:0 none;"><b>'.$label.':</b><br />';
 				echo '<input class="text" type="text" style="width:'.$w.'px;" id="post-'.$key.'" name="post-'.$key.'" value="'.$value.'" />';
         if ($isV3) echo ' <span class="edit-nav"><a id="browse-'.$key.'" href="#">'.i18n_r('i18n_customfields/BROWSE_PAGES').'</a></span>';
         echo '</td>'; 
-        $col++;
+        $col += 2;
 ?>
 <script type="text/javascript">
   function fill_<?php echo $i; ?>(url) {
@@ -208,12 +231,13 @@ function i18n_customfields_customize_ckeditor($editorvar) { // copied and modifi
 <?php
   			break; 
       case 'image':
+      case 'file':
         $w = $isV3 ? 500 : 513;
-				echo '<td colspan="2"><b>'.$label.':</b><br />';
+				echo '<td colspan="2" style="border:0 none;"><b>'.$label.':</b><br />';
 				echo '<input class="text" type="text" style="width:'.$w.'px;" id="post-'.$key.'" name="post-'.$key.'" value="'.$value.'" />';
-        if ($isV3) echo ' <span class="edit-nav"><a id="browse-'.$key.'" href="#">'.i18n_r('i18n_customfields/BROWSE_IMAGES').'</a></span>';
+        if ($isV3) echo ' <span class="edit-nav"><a id="browse-'.$key.'" href="#">'.($type=='image' ? i18n_r('i18n_customfields/BROWSE_IMAGES') : i18n_r('i18n_customfields/BROWSE_FILES')).'</a></span>';
         echo '</td>'; 
-        $col++;
+        $col += 2;
 ?>
 <script type="text/javascript">
   function fill_<?php echo $i; ?>(url) {
@@ -221,7 +245,7 @@ function i18n_customfields_customize_ckeditor($editorvar) { // copied and modifi
   }
   $(function() { 
     $('#browse-<?php echo $key; ?>').click(function(e) {
-      window.open('<?php echo $SITEURL; ?>plugins/i18n_customfields/browser/filebrowser.php?func=fill_<?php echo $i; ?>&type=images', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
+      window.open('<?php echo $SITEURL; ?>plugins/i18n_customfields/browser/filebrowser.php?func=fill_<?php echo $i; ?>&type=<?php echo $type=='image' ? 'images' : ''; ?>', 'browser', 'width=800,height=500,left=100,top=100,scrollbars=yes');
     });
   });
 </script>
@@ -229,7 +253,7 @@ function i18n_customfields_customize_ckeditor($editorvar) { // copied and modifi
   			break; 
 			case 'text':
       default:
-				echo '<td><b>'.$label.':</b><br />';
+				echo '<td style="border:0 none;"><b>'.$label.':</b><br />';
 				echo '<input class="text short" type="text" style="width:295px;" id="post-'.$key.'" name="post-'.$key.'" value="'.$value.'" /></td>'; 
         $col++;
   			break; 
@@ -239,6 +263,6 @@ function i18n_customfields_customize_ckeditor($editorvar) { // copied and modifi
       $col = 0;
     }
 	}		
-  if ($col == 1) echo '<td></td></tr>';
+  if ($col == 1) echo '<td style="border:0 none;"></td></tr>';
   if ($isV3) echo "</tbody></table>";
 

@@ -3,7 +3,7 @@ require_once(GSPLUGINPATH.'i18n_base/frontend.class.php');
 
 class I18nSitemap {
     
-  public static function generateSitemap() {
+  public static function generateSitemapWithoutPing() {
     global $SITEURL;
 
     $filenames = getFiles(GSDATAPAGESPATH);
@@ -41,7 +41,7 @@ class I18nSitemap {
             $pageLoc = find_i18n_url($page['url'], $page['parent'], $deflang);
           }
         } else {
-          $pageLoc = find_url($page['url'], $page['parent']);
+          $pageLoc = find_i18n_url($page['url'], $page['parent']);
         }      
         // set <lastmod>
         $pageLastMod = makeIso8601TimeStamp(date("Y-m-d H:i:s", strtotime($page['date'])));
@@ -51,7 +51,7 @@ class I18nSitemap {
         $pagePriority = $page['menuStatus'] == 'Y' ? '1.0' : '0.5';
         //add to sitemap
         $url_item = $xml->addChild('url');
-        $url_item->addChild('loc', $pageLoc);
+        $url_item->addChild('loc', htmlspecialchars($pageLoc));
         $url_item->addChild('lastmod', $pageLastMod);
         $url_item->addChild('changefreq', $pageChangeFreq);
         $url_item->addChild('priority', $pagePriority);
@@ -60,7 +60,12 @@ class I18nSitemap {
     //create xml file
     $file = GSROOTPATH .'sitemap.xml';
     XMLsave($xml, $file);
-    
+  }
+  
+  public static function generateSitemap() {
+    global $SITEURL;
+
+    self::generateSitemapWithoutPing();
     if (!defined('GSDONOTPING') || !GSDONOTPING) {
       if (file_exists(GSROOTPATH .'sitemap.xml')){
         if( 200 === ($status=pingGoogleSitemaps($SITEURL.'sitemap.xml'))) {
@@ -91,7 +96,7 @@ class I18nSitemap {
   }
   
   public static function isAutoSitemap() {
-    return defined('GSAUTOSITEMAP') && GSAUTOSITEMAP;
+    return !defined('GSNOSITEMAP') || !GSNOSITEMAP;
   }
 
   // execute action for all registered functions after the given one
@@ -111,19 +116,20 @@ class I18nSitemap {
   
   public static function patchSaveFile() {
     global $url;
-    if (self::isAutoSitemap()) self::generateSitemap();
+    if (!self::isAutoSitemap()) return;
+    self::generateSitemap();
     // redirect user back to edit page 
     if (isset($_POST['autosave']) && $_POST['autosave'] == 'true') {
       echo 'OK';
     } else {
       
-      if ($_POST['redirectto']!='') {
+      if (@$_POST['redirectto'] != '') {
         $redirect_url = $_POST['redirectto'];
       } else {
         $redirect_url = 'edit.php';
       }
       
-      if ($url == $_POST['existing-url']) {
+      if (!@$_POST['existing-url'] || $url == $_POST['existing-url']) {
         redirect($redirect_url."?id=". $url ."&upd=edit-success&type=edit");
       } else {
         redirect($redirect_url."?id=". $url ."&old=".$_POST['existing-url']."&upd=edit-success&type=edit");
@@ -134,6 +140,7 @@ class I18nSitemap {
   
   public static function patchDeleteFile() {
     global $id;
+    if (!self::isAutoSitemap()) return;
     // (re)generate sitemap if there are multiple languages, as it was just generated incorrectly
     if (self::isMultipleLanguages()) self::generateSitemap();
     redirect("pages.php?upd=edit-success&id=". $id ."&type=delete");
@@ -141,6 +148,7 @@ class I18nSitemap {
   }
   
   public static function patchSettings() {
+    if (!self::isAutoSitemap()) return;
     // (re)generate sitemap if there are multiple languages, as it was just generated incorrectly
     if (self::isMultipleLanguages()) self::generateSitemap();
   }

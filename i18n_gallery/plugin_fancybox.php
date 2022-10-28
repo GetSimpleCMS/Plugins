@@ -69,7 +69,7 @@ function i18n_gallery_fancybox_edit($gallery) {
 function i18n_gallery_fancybox_header($gallery) {
   if (i18n_gallery_check($gallery,'jquery') && i18n_gallery_needs_include('jquery.js')) {
 ?>
-    <script type="text/javascript" src="<?php echo i18n_gallery_site_link(); ?>plugins/i18n_gallery/js/jquery-1.4.3.min.js"></script>
+    <script type="text/javascript" src="<?php echo i18n_gallery_site_link(); ?>plugins/i18n_gallery/js/jquery-1.11.2.min.js"></script>
 <?php
   }
   if (i18n_gallery_check($gallery,'js') && i18n_gallery_check($gallery,'pagify',false) && i18n_gallery_needs_include('pagify.js')) {
@@ -79,7 +79,8 @@ function i18n_gallery_fancybox_header($gallery) {
   }
   if (i18n_gallery_check($gallery,'js') && i18n_gallery_needs_include('fancybox.js')) {
 ?>
-    <script type="text/javascript" src="<?php echo i18n_gallery_site_link(); ?>plugins/i18n_gallery/js/jquery.mousewheel-3.0.4.pack.js"></script>
+    <script type="text/javascript" src="<?php echo i18n_gallery_site_link(); ?>plugins/i18n_gallery/js/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript" src="<?php echo i18n_gallery_site_link(); ?>plugins/i18n_gallery/js/jquery.mousewheel-3.0.4.pack.js"></script>
     <script type="text/javascript" src="<?php echo i18n_gallery_site_link(); ?>plugins/i18n_gallery/js/jquery.fancybox-1.3.4.pack.js"></script>
 <?php
   } 
@@ -184,10 +185,12 @@ function i18n_gallery_fancybox_content($gallery, $pic) {
 <?php 
     $i = 0;
     foreach ($gallery['items'] as $item) { 
+      $text = @$item['_title'];
+      if (!$text) $text = @$item['_description']; else if (@$item['_description']) $text .= ' - '.$item['_description'];
 ?>
       <div class="gallery-thumb" <?php if (isset($thumb) && $thumb != $i) echo 'style="display:none"'; ?>>
-        <a href="<?php i18n_gallery_pic_link($gallery,$i); ?>" rel="fancybox-<?php echo $id; ?>" title="<?php echo htmlspecialchars(@$item['_title']); ?>">
-          <img src="<?php i18n_gallery_thumb_link($gallery,$item); ?>" alt="<?php echo htmlspecialchars(@$item['_title']); ?>"/>
+        <a href="<?php i18n_gallery_pic_link($gallery,$i); ?>" rel="fancybox-<?php echo $id; ?>" title="<?php echo htmlspecialchars($text); ?>">
+          <img src="<?php i18n_gallery_thumb_link($gallery,$item); ?>" alt="<?php echo htmlspecialchars(@$item['_description']); ?>"/>
         </a>
 <?php if ($showtitles) { ?>
         <p class="gallery-title"><?php echo htmlspecialchars(@$item['_title']); ?></p>

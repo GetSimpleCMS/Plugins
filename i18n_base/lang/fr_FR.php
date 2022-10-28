@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $i18n = array(
     'CLOSE_ALL' => "Voir que les pages actives"
   , 'DEFAULT_LANGUAGE_DESCR' => "Langue de toutes les pages avec URL sans le code langue (comme \"index\"), ex. \"fr\":"

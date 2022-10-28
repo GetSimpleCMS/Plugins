@@ -56,11 +56,11 @@ function i18n_gallery_thumb($gallery) {
 }
 
 function i18n_gallery_is_goto_image($pic) {
-  return $pic != null && intval($pic) >= 0;
+  return $pic !== null && intval($pic) >= 0;
 }
 
 function i18n_gallery_is_show_image($pic) {
-  return $pic != null && intval($pic) < 0;
+  return $pic !== null && intval($pic) < 0;
 }
 
 function i18n_gallery_item($gallery, $pic) {

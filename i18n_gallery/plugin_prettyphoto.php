@@ -88,7 +88,7 @@ function i18n_gallery_prettyphoto_edit($gallery) {
 function i18n_gallery_prettyphoto_header($gallery) {
   if (i18n_gallery_check($gallery,'jquery') && i18n_gallery_needs_include('jquery.js')) {
 ?>
-    <script type="text/javascript" src="<?php echo i18n_gallery_site_link(); ?>plugins/i18n_gallery/js/jquery-1.4.3.min.js"></script>
+    <script type="text/javascript" src="<?php echo i18n_gallery_site_link(); ?>plugins/i18n_gallery/js/jquery-1.11.2.min.js"></script>
 <?php
   }
   if (i18n_gallery_check($gallery,'js') && i18n_gallery_check($gallery,'pagify',false) && i18n_gallery_needs_include('pagify.js')) {
@@ -98,7 +98,8 @@ function i18n_gallery_prettyphoto_header($gallery) {
   }
   if (i18n_gallery_check($gallery,'js') && i18n_gallery_needs_include('prettyphoto.js')) {
 ?>
-    <script type="text/javascript" src="<?php echo i18n_gallery_site_link(); ?>plugins/i18n_gallery/js/jquery.prettyPhoto.js"></script>
+    <script type="text/javascript" src="<?php echo i18n_gallery_site_link(); ?>plugins/i18n_gallery/js/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript" src="<?php echo i18n_gallery_site_link(); ?>plugins/i18n_gallery/js/jquery.prettyPhoto.js"></script>
 <?php
   } 
   if (i18n_gallery_check($gallery,'css') && i18n_gallery_needs_include('prettyphoto.css')) { 

@@ -2,20 +2,20 @@
 /*
 Plugin Name: I18N Navigation
 Description: Multilevel navigation & breadcrumbs (I18N enabled)
-Version: 3.2.5
+Version: 3.3.1
 Author: Martin Vlcek
 Author URI: http://mvlcek.bplaced.net
 
 The menu functions return a hierarchical menu based on the "parent", "menuStatus" and "menuOrder" attributes of the 
 pages. The root menu consists of all pages with menuStatus = Y and no parent.
-
+http://mvlcek/de/get-simple/i18n
 Public functions:
   return_i18n_pages()
       returns an associative array of pages with the attributes url (slug), menuData, menuOrder, title, menu,
-      parent (the parent's url/slug) and the other languages' titles and menus (as e.g. title_en, menu_en).
+      parent (the parent's url/slug) and thehttp://mvlcek/de/get-simple/i18n other languages' titles and menus (as e.g. title_en, menu_en).
       additionally a sorted array of the children urls/slugs is available in the attribute children.
       the page with url/slug null contains the toplevel pages in the children array.
-  return_i18n_structure($slug=null, $menuOnly=true, $slugToIgnore=null)
+  return_i18n_page_structure($slug=null, $menuOnly=true, $slugToIgnore=null)
       returns the structure of the site in a flat sorted array where each entry is an associative array with
       the attributes url (slug), menuStatus, title, menu and level.
       If $slug is given, only the children (and their children, ...) of this page are returned.
@@ -81,7 +81,7 @@ define('I18N_SHOW_TITLES', I18N_FILTER_NONE | I18N_OUTPUT_TITLE);
 # filter navigation items (vetoed items are removed from navigation)
 #  - parameters: $url, $parent, $tags (tags as array)
 #  - must return true, if item should not be included in the navigation
-define('I18N_FILTER_VETO_NAV_ITEM', 'http://mvlcek/de/get-simple/i18nnavigation-veto');
+define('I18N_FILTER_VETO_NAV_ITEM', 'navigation-veto');
 
 if (function_exists('i18n_load_texts')) {
   i18n_load_texts('i18n_navigation');
@@ -93,7 +93,7 @@ if (function_exists('i18n_load_texts')) {
 register_plugin(
 	$thisfile, 
 	'I18N Navigation', 	
-	'3.2.5', 		
+	'3.3.1', 		
 	'Martin Vlcek',
 	'http://mvlcek.bplaced.net', 
 	i18n_r('i18n_navigation/PLUGIN_DESCRIPTION'),
@@ -113,6 +113,11 @@ add_action('header', 'i18n_navigation_admin_header');
 # workaround for page-delete in GetSimple 2.03:
 if (!function_exists('get_site_version') && basename($_SERVER['PHP_SELF']) == 'deletefile.php') {
   i18n_clear_cache();
+}
+# refresh page cache after menu edit
+@include_once(GSADMININCPATH.'caching_functions.php'); // workaround, because caching_functions is only included later
+if (function_exists('create_pagesxml')) {
+  add_action('menu-aftersave', 'create_pagesxml', array('true'));
 }
 
 # ===== BACKEND HOOKS =====

@@ -42,7 +42,7 @@ class I18nBasic {
   private static function saveSettings() {
     $data = @new SimpleXMLExtended('<?xml version="1.0" encoding="UTF-8"?><settings></settings>');
     foreach (self::$settings as $key => $value) {
-      if ($value != null) {
+      if ($value !== null) {
         $data->addChild($key)->addCData((string) $value);
       }
     }

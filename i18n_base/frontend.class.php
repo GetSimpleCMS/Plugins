@@ -15,9 +15,10 @@ class I18nFrontend {
       self::$languages = array();
       if (isset($_GET[I18N_LANGUAGE_PARAM])) {
         self::$languages[] = $_GET[I18N_LANGUAGE_PARAM];
-      }
-      if (isset($_SESSION[I18N_LANGUAGE_KEY]) && !in_array($_SESSION[I18N_LANGUAGE_KEY],self::$languages)) {
-        self::$languages[] = $_SESSION[I18N_LANGUAGE_KEY];
+      } else if (isset($_GET[I18N_SET_LANGUAGE_PARAM])) {
+        self::$languages[] = $_GET[I18N_SET_LANGUAGE_PARAM];
+      } else if (isset($_COOKIE[I18N_LANGUAGE_COOKIE])) {
+        self::$languages[] = $_COOKIE[I18N_LANGUAGE_COOKIE];
       }
       if (!defined('I18N_IGNORE_USER_LANGUAGE') || !I18N_IGNORE_USER_LANGUAGE) {
         $httplanguages = explode(",", @$_SERVER['HTTP_ACCEPT_LANGUAGE']);
@@ -34,9 +35,8 @@ class I18nFrontend {
   
   public static function init() {
     if (self::$initialized) return;
-    @session_start();
     if (isset($_GET[I18N_SET_LANGUAGE_PARAM])) {
-      $_SESSION[I18N_LANGUAGE_KEY] = $_GET[I18N_SET_LANGUAGE_PARAM];
+      setcookie(I18N_LANGUAGE_COOKIE, $_GET[I18N_SET_LANGUAGE_PARAM], 0, '/');
     }
     $languages = self::getLanguages();
     self::$initialized = true;
@@ -143,19 +143,24 @@ class I18nFrontend {
     }
     if (@strpos(@$PERMALINK_ORIG,'%language%') !== false || 
         @strpos(@$PERMALINK_ORIG,'%nondefaultlanguage%') !== false) {
+      if (substr($language,0,1) == '(') $language = substr($language,1,2);
       $u = self::getFancyLanguageUrl($slug, $slugparent, $language, $type);
-    } else if ($language && defined('I18N_SEPARATOR')) {
-      $u = find_url($slug, $slugparent, $type);
-      if ($slug == 'index') {
-        $u .= I18N_SEPARATOR.$language;
+    } else {
+      if (substr($language,0,1) == '(') $language = null;
+      if (@strpos(@$PERMALINK_ORIG,'%parents%') !== false) {
+        $u = self::getFancyLanguageUrl($slug, $slugparent, null, $type);
       } else {
-        preg_match('/^([^\?]*[^\?\/])(\/?(\?.*)?)$/', $u, $match);
-        $u = $match[1].I18N_SEPARATOR.$language.@$match[2];
+        $u = find_url($slug, $slugparent, $type);
       }
-    } else { 
-      $u = find_url($slug, $slugparent, $type);
-      if ($language) {
-        $u .= (strpos($u,'?') !== false ? '&' : '?') . I18N_LANGUAGE_PARAM . '=' . $language;
+      if ($language && (!defined('I18N_SINGLE_LANGUAGE') || !I18N_SINGLE_LANGUAGE)) {
+        if (defined('I18N_SEPARATOR') && $slug == 'index') {
+          $u .= I18N_SEPARATOR.$language;
+        } else if (defined('I18N_SEPARATOR')) {
+          preg_match('/^([^\?]*[^\?\/])(\/?(\?.*)?)$/', $u, $match);
+          $u = $match[1].I18N_SEPARATOR.$language.@$match[2];
+        } else {
+          $u .= (strpos($u,'?') !== false ? '&' : '?') . I18N_LANGUAGE_PARAM . '=' . $language;
+        }
       }
     }
     return $u;
@@ -181,12 +186,12 @@ class I18nFrontend {
   public static function outputLinkTo($slug) {
     $data = self::getPageData($slug);
     if (!$data) return false;
-    echo '<a href="'.find_url($slug,(string) $data->parent).'">'.stripslashes((string) $data->title).'</a>';
+    echo '<a href="'.htmlspecialchars(self::getURL($slug,(string) $data->parent)).'">'.stripslashes((string) $data->title).'</a>';
     return true;
   }
 
   // like get_header, but tags beginning with _ are ignored and the language is appended to the canonical URL
-  public static function outputHeader($full=true) {
+  public static function outputHeader($full=true, $omit=null) {
     global $metad, $metak, $title, $content, $url, $parent, $language;
     include(GSADMININCPATH.'configuration.php');
     if ($metad != '') {
@@ -197,8 +202,8 @@ class I18nFrontend {
       } else {
         $description = trim(substr(html_entity_decode(strip_tags(stripslashes(htmlspecialchars_decode($content, ENT_QUOTES))),ENT_QUOTES, 'UTF-8'), 0, 160));
       }
-      $description = str_replace('"','', $description);
-      $description = str_replace("'",'', $description);
+      $description = preg_replace('/\(%.*?%\)/', " ", $description);
+      $description = preg_replace('/\{%.*?%\}/', " ", $description);
       $description = preg_replace('/\n/', " ", $description);
       $description = preg_replace('/\r/', " ", $description);
       $description = preg_replace('/\t/', " ", $description);
@@ -208,12 +213,13 @@ class I18nFrontend {
     $tags = preg_split("/\s*,\s*/", stripslashes(htmlspecialchars_decode($metak, ENT_QUOTES)));
     if (count($tags) > 0) foreach ($tags as $tag) if (substr(trim($tag),0,1) != '_') $keywords[] = trim($tag);
     
-    echo '<meta name="description" content="'.htmlspecialchars(trim($description)).'" />'."\n";
-    echo '<meta name="keywords" content="'.htmlspecialchars(implode(', ',$keywords)).'" />'."\n";
+    if (!$omit || !in_array('description',$omit)) echo '<meta name="description" content="'.htmlspecialchars(trim($description)).'" />'."\n";
+    if (!$omit || !in_array('keywords',$omit)) echo '<meta name="keywords" content="'.htmlspecialchars(implode(', ',$keywords)).'" />'."\n";
     if ($full) {
-      echo '<meta name="generator" content="'.$site_full_name.'" />'."\n";
-      echo '<link rel="canonical" href="'.find_i18n_url($url,$parent,$language).'" />'."\n";
+      if (!$omit || !in_array('generator',$omit)) echo '<meta name="generator" content="'.$site_full_name.'" />'."\n";
+      if (!$omit || !in_array('canonical',$omit)) echo '<link rel="canonical" href="'.find_i18n_url($url,$parent,$language).'" />'."\n";
     }
+    if (function_exists('get_scripts_frontend')) get_scripts_frontend();
     exec_action('theme-header');
   }
 
@@ -268,28 +274,44 @@ class I18nFrontend {
     } else {
       $full = '/';
     }
-
     if (!$lang) {
       $lang = @$_GET[I18N_LANGUAGE_PARAM] ? $_GET[I18N_LANGUAGE_PARAM] : $language;
     }
     $plink = $PERMALINK_ORIG;
-    if ($lang != self::getDefaultLanguage()) {
+    if ($lang && $lang != self::getDefaultLanguage()) {
       $plink = str_replace('%nondefaultlanguage%', $lang, $plink);
     } else {
       $plink = str_replace('%nondefaultlanguage%/', '', $plink);
       $plink = str_replace('%nondefaultlanguage%', '', $plink);
     }
     $plink = str_replace('%language%', $lang, $plink);
-    if ((string) $parent) {
-      //echo "===$parent===";
+    $parent = (string) $parent;
+    if ($parent && (string) $slug && $slug != 'index') { // no parent for index page
       $plink = str_replace('%parent%', $parent, $plink);
+      if (strpos($plink,'%parents%') !== false) {
+        $parents = $parent;
+        if (function_exists('return_i18n_pages')) {
+          $pages = return_i18n_pages();
+          while ($parent = @$pages[$parent]['parent']) {
+            $parents = $parent.'/'.$parents;
+          }
+        } elseif (function_exists('getPageField')) {
+          while ($parent = getPageField($parent,'parent')) {
+            $parents = $parent.'/'.$parents;
+          }
+        }
+        $plink = str_replace('%parents%', $parents, $plink);
+      }
     } else {
       $plink = str_replace('%parent%/', '', $plink);
       $plink = str_replace('%parent%', '', $plink);
+      $plink = str_replace('%parents%/', '', $plink);
+      $plink = str_replace('%parents%', '', $plink);
     }
     if ((string) $slug && $slug != 'index') {
       $plink = str_replace('%slug%', $slug, $plink);
     } else {
+      $plink = preg_replace('/%slug%\.[a-zA-Z]+/', '', $plink); // support for file extensions
       $plink = str_replace('%slug%/', '', $plink);
       $plink = str_replace('%slug%', '', $plink);
     }

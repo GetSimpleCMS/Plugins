@@ -4,7 +4,9 @@
  *
  * Displays and selects file link to insert
  */
-include('../../../admin/inc/common.php');
+require('../../../gsconfig.php');
+if (!defined('GSADMIN')) define('GSADMIN', 'admin');
+include('../../../'.GSADMIN.'/inc/common.php');
 $loggedin = cookie_check();
 if (!$loggedin) die;
 if (isset($_GET['path'])) {
@@ -16,14 +18,13 @@ if (isset($_GET['path'])) {
 }
 $path = tsl($path);
 
+global $SITEURL;
 // check if host uses Linux (used for displaying permissions
 $isUnixHost = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? false : true);
-$path_parts = pathinfo($_SERVER['PHP_SELF']);
-$dir = str_replace("/plugins/i18n_customfields/browser", "", $path_parts['dirname']);
-$fullPath = htmlentities("http://".$_SERVER['SERVER_NAME'].($dir == '/' ? "" : $dir)."/data/uploads/", ENT_QUOTES);
-$sitepath = htmlentities("http://".$_SERVER['SERVER_NAME'].($dir == '/' ? "" : $dir)."/", ENT_QUOTES);
+$fullPath = htmlentities((string) $SITEURL."data/uploads/", ENT_QUOTES);
+$sitepath = htmlentities((string) $SITEURL, ENT_QUOTES);
 
-$func = @$_GET['func'];
+$func = preg_replace('/[^\w]/', '', @$_GET['func']);
 $type = @$_GET['type'];
 
 if(!defined('IN_GS')){ die('you cannot load this page directly.'); }
@@ -35,8 +36,8 @@ $LANG_header = preg_replace('/(?:(?<=([a-z]{2}))).*/', '', $LANG);
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"  />
 	<title><?php echo i18n_r('FILE_BROWSER'); ?></title>
-	<link rel="shortcut icon" href="../../../admin/favicon.png" type="image/x-icon" />
-	<link rel="stylesheet" type="text/css" href="../../../admin/template/style.php?v=<?php echo GSVERSION; ?>" media="screen" />
+	<link rel="shortcut icon" href="../../../<?php echo GSADMIN; ?>/favicon.png" type="image/x-icon" />
+	<link rel="stylesheet" type="text/css" href="../../../<?php echo GSADMIN; ?>/template/style.php?v=<?php echo GSVERSION; ?>" media="screen" />
 	<style>
 		.wrapper, #maincontent, #imageTable { width: 100% }
 	</style>
@@ -73,8 +74,8 @@ $LANG_header = preg_replace('/(?:(?<=([a-z]{2}))).*/', '', $LANG);
 			} else {
 				$filesArray[$count]['name'] = $file;
 				$ext = substr($file, strrpos($file, '.') + 1);
-				$extention = get_FileType($ext);
-				$filesArray[$count]['type'] = $extention;
+				$extension = get_FileType($ext);
+				$filesArray[$count]['type'] = $extension;
 				clearstatcache();
 				$ss = @stat($path . $file);
 				$filesArray[$count]['date'] = @date('M j, Y',$ss['ctime']);
@@ -106,7 +107,7 @@ $LANG_header = preg_replace('/(?:(?<=([a-z]{2}))).*/', '', $LANG);
 			echo '<tr class="All" >';  
 			echo '<td class="" colspan="5">';
 			$adm = ($subPath ? $subPath . "/" : "") . $upload['name']; 
-			echo '<img src="../../../admin/template/images/folder.png" width="11" /> <a href="filebrowser.php?path='.$adm.'&amp;func='.$func.'&amp;type='.$type.'" title="'. $upload['name'] .'"  ><strong>'.$upload['name'].'</strong></a>';
+			echo '<img src="../../../'.GSADMIN.'/template/images/folder.png" width="11" /> <a href="filebrowser.php?path='.$adm.'&amp;func='.$func.'&amp;type='.$type.'" title="'. $upload['name'] .'"  ><strong>'.$upload['name'].'</strong></a>';
 			echo '</td>';
 			echo '</tr>';
 		}
@@ -118,32 +119,31 @@ $LANG_header = preg_replace('/(?:(?<=([a-z]{2}))).*/', '', $LANG);
 			$subDir = ($subPath == '' ? '' : $subPath.'/');
 			$selectLink = 'title="'.i18n_r('SELECT_FILE').': '. htmlspecialchars(@$upload['name']) .'" href="javascript:void(0)" onclick="submitLink(\''.$fullPath.$subDir.$upload['name'].'\')"';
 
-			if ($type == 'images') {
-				if ($upload['type'] == i18n_r('IMAGES') .' Images') {
-					# get internal thumbnail to show beside link in table
-					$thumb = '<td class="imgthumb" style="display:table-cell" >';
-					$thumbLink = $urlPath.'thumbsm.'.$upload['name'];
-					if (file_exists('../../../data/thumbs/'.$thumbLink)) {
-						$imgSrc='<img src="../../../data/thumbs/'. $thumbLink .'" />';
-					} else {
-						$imgSrc='<img src="../../../admin/inc/thumb.php?src='. $urlPath . $upload['name'] .'&amp;dest='. $thumbLink .'&amp;x=65&amp;f=1" />';
-					}
-					$thumb .= '<a '.$selectLink.' >'.$imgSrc.'</a>';
-					$thumb .= '</td>';
-					
-					# get external thumbnail link
-					$thumbLinkExternal = 'data/thumbs/'.$urlPath.'thumbnail.'.$upload['name'];
-					if (file_exists('../../../'.$thumbLinkExternal)) {
-					$thumbnailLink = '<span>&nbsp;&ndash;&nbsp;&nbsp;</span><a href="javascript:void(0)" onclick="submitLink(\''.$sitepath.$thumbLinkExternal.'\')">'.i18n_r('THUMBNAIL').'</a>';
-					}
+			if ($upload['type'] == i18n_r('IMAGES') .' Images') {
+				# get internal thumbnail to show beside link in table
+				$thumb = '<td class="imgthumb" style="display:table-cell" >';
+				$thumbLink = $urlPath.'thumbsm.'.$upload['name'];
+				if (file_exists('../../../data/thumbs/'.$thumbLink)) {
+					$imgSrc='<img src="../../../data/thumbs/'. $thumbLink .'" />';
+				} else {
+					$imgSrc='<img src="../../../'.GSADMIN.'/inc/thumb.php?src='. $urlPath . $upload['name'] .'&amp;dest='. $thumbLink .'&amp;x=65&amp;f=1" />';
 				}
-				else { continue; }
+				$thumb .= '<a '.$selectLink.' >'.$imgSrc.'</a>';
+				$thumb .= '</td>';
+				
+				# get external thumbnail link
+				$thumbLinkExternal = 'data/thumbs/'.$urlPath.'thumbnail.'.$upload['name'];
+				if (file_exists('../../../'.$thumbLinkExternal)) {
+				$thumbnailLink = '<span>&nbsp;&ndash;&nbsp;&nbsp;</span><a href="javascript:void(0)" onclick="submitLink(\''.$sitepath.$thumbLinkExternal.'\')">'.i18n_r('THUMBNAIL').'</a>';
+				}
+			} else if ($type == 'images') {
+			  continue;
 			}
 
 			$counter++;	
 
 			echo '<tr class="All '.$upload['type'].'" >';
-			echo ($thumb=='' ? '<td style="display: none"></td>' : $thumb);
+			echo (!$thumb ? '<td style="width:0;"></td>' : $thumb);
 			echo '<td><a '.$selectLink.' class="primarylink">'.htmlspecialchars($upload['name']) .'</a>'.$thumbnailLink.'</td>';
 			echo '<td style="width:80px;text-align:right;" ><span>'. $upload['size'] .'</span></td>';
 

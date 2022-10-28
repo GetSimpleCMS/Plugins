@@ -121,6 +121,7 @@
         array_push($stack, $url);
       }
     }
+    exec_action('menu-aftersave');
     return true;
   }
 
@@ -137,6 +138,7 @@
       }
     }
     closedir($dir_handle);
+    exec_action('menu-aftersave');
     return true;
   }
 
@@ -269,8 +271,12 @@
       function moveLeft(e) {
         var $tr = $(e.target).closest('tr');
         var level = getLevel($tr);
-        var nextlevel = getLevel($tr.next());
-        if (level > 0 && nextlevel <= level) setLevel($tr, level-1); 
+        if ($tr.next().length > 0) {
+          var nextlevel = getLevel($tr.next());
+          if (level > 0 && nextlevel <= level) setLevel($tr, level-1); 
+        } else {
+          if (level > 0) setLevel($tr, level-1);
+        }
         e.preventDefault();
       }
       function moveRight(e) {

@@ -2,7 +2,7 @@
 /*
 Plugin Name: I18N Base
 Description: Internationalization based on slug/URL names (e.g. index, index_de, index_fr)
-Version: 3.0.2
+Version: 3.3.1
 Author: Martin Vlcek
 Author URI: http://mvlcek.bplaced.net
 
@@ -30,6 +30,8 @@ Public functions:
   return_i18n_component($slug)
       returns the component content (unprocessed)
 
+The current language is available in the global variable $language.
+
 Display functions:
   get_i18n_header()
       like get_header, but tags beginning with _ are ignored and the language is appended to the canonical URL
@@ -47,7 +49,10 @@ Functions to call for other plugins:
 
 Ignore user language:
       if you want to ignore the language(s) the user has set in his browser, add the following to gsconfig.php:
-        define('I18N_IGNORE_USER_LANGUAGE',true);
+        define('I18N_IGN2.9ORE_USER_LANGUAGE',true);
+      if you don't want to display the multi-language comment and default page on the pages view
+      and you really only have one language, add the following to gsconfig.php:
+        define('I18N_SINGLE_LANGUAGE', true);
                   
 Fancy URLs:
       You can include a placeholder %language% in the fancy URL - then the language will be always included
@@ -66,32 +71,32 @@ define('I18N_DEFAULT_LANGUAGE', 'en');
 define('I18N_SETTINGS_FILE', 'i18n_settings.xml');
 define('I18N_LANGUAGE_PARAM', 'lang');            # language parameter in URL, e.g. "...?lang=de"
 define('I18N_SET_LANGUAGE_PARAM', 'setlang');     # parameter to set current language via GET/POST, e.g. "...?setlang=de"
-define('I18N_LANGUAGE_KEY', 'language');          # session key for language, if language was set 
+define('I18N_LANGUAGE_COOKIE', 'language');       # cookie set, if the user selects a language with the set language param
 
 // properties
 define('I18N_PROP_DEFAULT_LANGUAGE', 'default_language');
 define('I18N_PROP_URLS_TO_IGNORE', 'urls-to-ignore');
 define('I18N_PROP_PAGES_VIEW', 'pages-view');
+define('I18N_PROP_PAGES_SORT', 'pages-sort');
 
 $i18n_base_tab = 'pages';
-if (basename($_SERVER['PHP_SELF']) == 'load.php' && @$_GET['id'] == 'i18n_specialpages') {
-  $i18n_specialpages_tab = isset($_GET['sitemap']) ? 'theme' : 'pages';
+if (basename($_SERVER['PHP_SELF']) == 'load.php' && @$_GET['id'] == 'i18n_base') {
+  $i18n_base_tab = isset($_GET['sitemap']) ? 'theme' : 'pages';
 }
+
+i18n_load_texts('i18n_base');
 
 # register plugin
 register_plugin(
 	$thisfile, 
 	'I18N Base', 	
-	'3.0.2', 		
+	'3.3.1', 		
 	'Martin Vlcek',
 	'http://mvlcek.bplaced.net', 
-	'Internationalize content based on slug/URL names',
+	i18n_r('i18n_base/PLUGIN_DESCRIPTION'),
 	$i18n_base_tab,
 	'i18n_main'  
 );
-
-require_once(GSPLUGINPATH.'i18n_common/common.php');
-i18n_load_texts('i18n_base');
 
 # activate filter
 add_action('index-pretemplate', 'i18n_init');
@@ -100,24 +105,36 @@ add_action('pages-sidebar', 'i18n_base_sidebar_item', array($thisfile, i18n_r('i
 add_action('admin-pre-header', 'i18n_base_admin_pre_header'); // 3.1+ only
 add_action('header', 'i18n_base_admin_header'); // 3.0+
 
-# patches for sitemap generation (GetSimple 3.1)
+# always add sidebar action - for adminbar plugin
+add_action('theme-sidebar', 'i18n_base_sidebar_item', array($thisfile, i18n_r('SIDE_GEN_SITEMAP'), 'sitemap'));
+
 if (function_exists('generate_sitemap')) {
-  add_action('theme-sidebar', 'i18n_base_sidebar_item', array($thisfile, i18n_r('SIDE_GEN_SITEMAP'), 'sitemap'));
+  # patches for sitemap generation (GetSimple 3.1, 3.2)
+  # also use this for GetSimple 3.3, as just using hook sitemap-aftersave would generate the sitemap twice - slow
   add_action('changedata-aftersave', 'i18n_base_patch_page_save');
   add_action('page-delete', 'i18n_base_patch_page_delete');
-  add_action('settings-website-extras', 'i18n_base_patch_settings');
-  // the non-i18n sitemap is also generated when you restore a backup page - no remedy for this
+  // the non-i18n sitemap is also generated when you restore a backup page - no remedy for this in 3.1, 3.2
+  if (!function_exists('var_out')) {
+    // only for GetSimple 3.1, 3.2
+    add_action('settings-website-extras', 'i18n_base_patch_settings');
+  }
 }
+add_action('sitemap-aftersave', 'i18n_base_sitemap_aftersave'); // GetSimple 3.3+
 
 # ===== BACKEND HOOKS =====
 
-function i18n_base_sidebar_item($id, $txt, $action=null, $always=true){
-  $current = false;
-  if (isset($_GET['id']) && $_GET['id'] == $id && (!$action || isset($_GET[$action]))) {
-    $current = true;
-  }
-  if ($always || $current) {
-    echo '<li><a href="load.php?id='.$id.($action ? '&amp;'.$action : '').'" '.($current ? 'class="current"' : '').' >'.$txt.'</a></li>';
+function i18n_base_sidebar_item($id, $txt, $action=null, $always=true) {
+  $is31 = function_exists('generate_sitemap'); # GetSimple 3.1+
+  if ($is31) { 
+    createSideMenu($id, $txt, $action, $always);
+  } else {
+    $current = false;
+    if (isset($_GET['id']) && $_GET['id'] == $id && (!$action || isset($_GET[$action]))) {
+      $current = true;
+    }
+    if ($always || $current) {
+      echo '<li><a href="load.php?id='.$id.($action ? '&amp;'.$action : '').'" '.($current ? 'class="current"' : '').' >'.$txt.'</a></li>';
+    }
   }
 }
 
@@ -135,9 +152,14 @@ function i18n_base_edit() {
   include(GSPLUGINPATH.'i18n_base/editextras.php');
 }
 
+function i18n_base_sitemap_aftersave() {
+  require_once(GSPLUGINPATH.'i18n_base/sitemap.class.php');
+  I18nSitemap::generateSitemapWithoutPing();
+}
+
 function i18n_base_patch_page_save() {
   require_once(GSPLUGINPATH.'i18n_base/sitemap.class.php');
-  I18nSitemap::executeOtherFunctions('changedata-save', 'i18n_base_patch_page_save');
+  I18nSitemap::executeOtherFunctions('changedata-aftersave', 'i18n_base_patch_page_save');
   I18nSitemap::patchSaveFile();
 }
 
@@ -251,9 +273,9 @@ function get_i18n_link($slug) {
   return I18nFrontend::outputLinkTo($slug);  
 }
 
-function get_i18n_header($full=true) {
+function get_i18n_header($full=true, $omit=null) {
   require_once(GSPLUGINPATH.'i18n_base/frontend.class.php');
-  I18nFrontend::outputHeader($full);
+  I18nFrontend::outputHeader($full, $omit);
 }
 
 

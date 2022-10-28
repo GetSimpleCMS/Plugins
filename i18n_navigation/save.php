@@ -1,6 +1,5 @@
 <?php
-global $xml;
-$url = $_POST['post-id'];
+global $xml, $url;
 if (strpos($url,'_') === false) {
   $parent = $_POST['post-parent'];
   $after = $_POST['post-menu-order'];
@@ -13,7 +12,7 @@ if (strpos($url,'_') === false) {
       if ($sibling != $url) {
         $file = GSDATAPAGESPATH . $sibling . '.xml';
         if (file_exists($file)) {
-          $data = getXML($file);
+          $data = simplexml_load_file($file, 'SimpleXMLExtended');
           if ($i != (int) $data->menuOrder) {
             unset($data->menuOrder);
             $data->addChild('menuOrder')->addCData($i);

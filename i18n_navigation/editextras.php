@@ -14,8 +14,8 @@
   sort($tags);
   # structure
   $structure = return_i18n_page_structure(null,false,$url);
-  $siblings = $pages[''.$parent]['children'];
-  $myindex = array_search($url, $siblings);
+  $siblings = @$pages[''.$parent]['children'];
+  if ($siblings) $myindex = array_search($url, $siblings); else $myindex = false;
   $after = $myindex !== false && $myindex > 0 ? $siblings[$myindex-1] : '';
 ?>
   var after = <?php echo json_encode($after); ?>;
