@@ -21,7 +21,7 @@
 	while ($filename = readdir($dir_handle)) {
     if (strrpos($filename,'.xml') === strlen($filename)-4 && !is_dir(GSDATAPAGESPATH . $filename)) {
 			$data = getXML(GSDATAPAGESPATH . $filename);
-      if (!$isI18N || strpos($filename,'_') === false) {
+      if (!$isI18N || !str_contains($filename,'_')) {
         $url = '' . $data->url;
         if (!isset($pages[$url])) {
           $pages[$url] = array('url' => $url, 'variants' => array());

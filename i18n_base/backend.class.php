@@ -31,7 +31,7 @@ class I18nBackend {
           $('a[href^=sitemap\\.php]').attr('href','load.php?id=i18n_base&sitemap');
           <?php } else {  # directly to XML as sitemap.php regenerates site map ?>
           $('a[href^=sitemap\\.php]').attr('href',<?php echo json_encode($SITEURL.'sitemap.xml'); ?>);
-          <?php } ?>
+<?php } ?>
         });
       </script>
 <?php

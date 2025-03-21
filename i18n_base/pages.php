@@ -29,7 +29,7 @@
 	while ($filename = readdir($dir_handle)) {
     if (strrpos($filename,'.xml') === strlen($filename)-4 && !is_dir(GSDATAPAGESPATH . $filename) && !preg_match($files_to_ignore, $filename)) {
 			$data = getXML(GSDATAPAGESPATH . $filename);
-      if (strpos($filename,'_') !== false) {
+      if (str_contains($filename,'_')) {
         $pos = strpos($data->url,'_');
         $url = substr($data->url,0,$pos);
         $lang = substr($data->url,$pos+1);

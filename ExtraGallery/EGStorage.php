@@ -37,7 +37,7 @@ class EGStorage {
 						$n = substr($filename,strlen(EG_PREFIX) + $iLen + 1,-4); //find name from file name
 						if (!isset(self::$_internalGalleries[$instanceNum][$n]) && (!$name || $n == $name)) { 
 							// load _internalGalleries
-							self::$_internalGalleries[$instanceNum][$n] = EGGallery::load($instanceNum, $n);
+							self::$_internalGalleries[$instanceNum][$n] = EGGallery::load($n, $instanceNum);
 						}
 					}
 				}
@@ -83,29 +83,29 @@ class EGStorage {
             foreach ($gals as $key => $gal) {  
                 if (!$gal) //if exists
                     continue;
-                    
+
                 //rewrite values, no matter 
                 if (!$settings['title-disabled'])
                     $gal['title'] = $gal['title'][$langIndex];
-                    
+
                 for ($i = 0; $i < count($gal['items']); $i++) {
                     $row = $gal['items'][$i];
 
-                    
+
                     //rewrite all fields from nested array to main array
                     if (isset($row['languages'][$langIndex])) //only if any fields exists
                         $row = array_merge($row, $row['languages'][$langIndex]);
-                        
-                        
+
+
                     $row['filename'] = str_replace(GSDATAPATH, '', GSDATAUPLOADPATH).$row['filename']; //create path from data
-                    
+
                     for ($t = 0; $t < isset($row['thumb-'.$t]); $t++) {
                         if ($row['thumb-'.$t]['filename'])
                             $row['thumb-'.$t]['filename'] = str_replace(GSDATAPATH, '', EG_THUMBS).$row['thumb-'.$t]['filename']; //create path from data
                     }
-                    
+
                     unset($row['languages']);
-                    
+
                     $gal['items'][$i] = $row;
                 }
                 self::$_externalGalleries[$instanceNum][$langIndex][$name ? $name : $key] = $gal; //store

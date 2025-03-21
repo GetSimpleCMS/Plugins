@@ -57,10 +57,9 @@ class DisplayImItems
 		  if(file_exists($file)){
 		  $date = getXML($file);
 		  
-			 while (list($key, $val) = each($this->tags))
-			 {
-				$this->tags[$key]['value']=(string)$date->{$key};
-			 }
+			 foreach ($this->tags as $key => $val) {
+        $this->tags[$key]['value']=(string)$date->{$key};
+    }
 		  }
 		}
 	}

@@ -17,7 +17,7 @@ class EGGallery
     }
 
         
-    public static function load($instanceNum = 0, $name){
+    public static function load($name, $instanceNum = 0){
         $settings = EGSettings::load($instanceNum);
     
         //realpath protectes
@@ -208,17 +208,17 @@ class EGGallery
                         
         for ($i = 0; $i < count($data['items']); $i++) {
             $row = $data['items'][$i];
-            
+
             if (!filepath_is_safe(GSDATAUPLOADPATH . $row['filename'], GSDATAUPLOADPATH))
                 return 'Filename path not safe.';
-                
+
             //fill real sizes of image
             $img = new EGImage(GSDATAUPLOADPATH . $row['filename']);
             $row['width'] =  $img->getWidth();
             $row['height'] =  $img->getHeight();
             $img->destroy();
-			
-			
+
+
 			//check width validation
 			if($settings['required-width-comparator'] == 'range' && count($settings['required-width-ranges'])){
 				if (!self::_validateSize('range', $settings['required-width-ranges'], $row['width']))
@@ -238,26 +238,26 @@ class EGGallery
 				if (!self::_validateSize($settings['required-height-comparator'], $settings['required-height'], $row['height']))
 					return 'Required height not passed.';
 			}	
-			
-            
+
+
             for ($t = 0; $t < count($settings['thumbnails']); $t++) {
                 if ( $settings['thumbnails'][$t]['enabled'] ){
-                
+
                     if ($settings['thumbnails'][$t]['required'] && self::_empty($row['thumb-' . $t]['filename']))
                         return 'Missing thumbnail that is required';
-                        
+
                     if ($row['thumb-' . $t]['filename']){
                         if (!filepath_is_safe(EG_THUMBS . $row['thumb-' . $t]['filename'], EG_THUMBS))
                             return 'Thumbnail path is not safe';
-                    
+
                         $sizes = self::_sizeFromFilename($row['thumb-' . $t]['filename']);
-                        
+
                         if ($settings['thumbnails'][$t]['width'] && $sizes[0] != $settings['thumbnails'][$t]['width'])
                             return 'Thumbnail width not match set width.';       
 
                         if ($settings['thumbnails'][$t]['height'] && $sizes[1] != $settings['thumbnails'][$t]['height'])
                             return 'Thumbnail height not match set width.';  
-                            
+
                         $row['thumb-' . $t]['width'] = $sizes[0];
                         $row['thumb-' . $t]['height'] = $sizes[1];
                     }
@@ -266,22 +266,22 @@ class EGGallery
 
             for ($f = 0; $f < count($settings['fields']); $f++) {
                 $func = '_empty';
-                
+
 				//not required or checkbox
                 if (!$settings['fields'][$f]['required'] || $settings['fields'][$f]['type'] == 'checkbox')
                     continue;
-                
+
                 if ($settings['fields'][$f]['type'] == 'wysiwyg'){
                     $func = '_wysiwygEmpty';
                 }
-                
+
                 for ($l = 0; $l < $langCount; $l++) { 
                     if ( call_user_func( __CLASS__.'::'.$func ,$row['languages'][$l]['field-' . $f]) )
                         return 'Requried field is empty.';
                 }
 
             }
-            
+
             $data['items'][$i] = $row; //reasign after changes
         }
         

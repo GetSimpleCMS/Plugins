@@ -67,7 +67,7 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	register_script('DM_Matrix',$SITEURL.'plugins/DM_Matrix/js/DM_Matrix.js', '0.1',FALSE);
 	queue_script('DM_Matrix', GSBACK);
 
-	
+
 	register_script('codemirror', $SITEURL.'admin/template/js/codemirror/lib/codemirror-compressed.js', '0.2.0', FALSE);
 	queue_script('codemirror', GSBACK);
 	if (file_exists(GSADMINPATH.'/template/js/codemirror/lib/searchcursor.js')){
@@ -81,13 +81,13 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 		queue_script('codemirror-search-cursor', GSBACK);
 		queue_script('codemirror-folding', GSBACK);
 	} 
-	
+
 	register_style('codemirror-css',$SITEURL.'admin/template/js/codemirror/lib/codemirror.css','screen',FALSE);
 	register_style('codemirror-theme',$SITEURL.'admin/template/js/codemirror/theme/default.css','screen',FALSE);		
-	
+
 	queue_style('codemirror-css', GSBACK);
 	queue_style('codemirror-theme', GSBACK);
-	
+
 	register_script('DM_tablesorter',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorter.js', '0.1',FALSE);
 	queue_script('DM_tablesorter', GSBACK);
 	register_script('DM_tablepager',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorter.pager.js', '0.1',FALSE);
@@ -96,22 +96,22 @@ if (isset($_GET['id']) && $_GET['id']=="DM_Matrix"){
 	queue_style('DM_tablesorter', GSBACK);
 	register_style('DM_tablepager',$SITEURL.'plugins/DM_Matrix/js/jquery.tablesorter.pager.css','screen',FALSE);
 	queue_style('DM_tablepager', GSBACK);
-	
+
 	register_script('DM_Matrix_timepicker',$SITEURL.'plugins/DM_Matrix/js/timepicker.js', '0.1',FALSE);
 	queue_script('DM_Matrix_timepicker', GSBACK);
-	
+
 	register_style('jquery-ui-css',$SITEURL.'plugins/DM_Matrix/css/redmond/jquery-ui-1.8.16.custom.css','screen',FALSE);
 	queue_style('jquery-ui-css', GSBACK);
 	queue_script('jquery-ui', GSBACK);	
 	register_style('DM_Matrix_css',$SITEURL.'plugins/DM_Matrix/css/style.css', '0.1',FALSE);
 	queue_style('DM_Matrix_css', GSBACK);
-	
+
 	register_script('ckeditor', $SITEURL.'admin/template/js/ckeditor/ckeditor.js', '0.2.0', FALSE);
 	queue_script('ckeditor', GSBACK);
-	
+
 	register_script('askconfirm', $SITEURL.'plugins/DM_Matrix/js/jconfirm.jquery.js', '0.2.0', FALSE);
 	queue_script('askconfirm', GSBACK);
-	
+
 }
 
 add_action('nav-tab','createNavTab',array('DM_Matrix','DM_Matrix','The Matrix','action=matrix_manager&schema'));
@@ -145,7 +145,7 @@ if (isset($_GET['add']) && isset($_GET['addrecord'])){
 	$table=$_GET['add'];
 	addRecordFromForm($table);
 	}
-	
+
 if (isset($_GET['add']) && isset($_GET['updaterecord'])){
 	$table=$_GET['add'];
 	updateRecordFromForm($table);
@@ -192,7 +192,7 @@ if (isset($_GET['edit']) && isset($_GET['addfield'])){
 	} else {
 		$tableview=0;
 	}
-	
+
 	$field=array(
 		'name'=>$_POST['post-name'],
 		'type'=>$_POST['post-type'],

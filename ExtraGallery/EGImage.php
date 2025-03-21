@@ -263,7 +263,7 @@ class EGImage
         if(!$this->_sourceImage)
             readfile($this->_fileName);
 		else
-			$this->_execute(null, $quality);
+			$this->_execute($quality, null);
 		
 
 		$this->destroy();
@@ -279,14 +279,14 @@ class EGImage
 	{			
 		if(!$this->_sourceImage) //no source image, just re save 
             $this->_setSourceImage();
-			
+
 		$fileName = $fileName ? $fileName : $this->_fileName;
-			
-		if (!$this->_execute($fileName, $quality))
+
+		if (!$this->_execute($quality, $fileName))
 			$this->_error('CannotSave', $fileName);
-			
+
 		$this->_fileName = $fileName;
-		
+
 		$this->destroy(); //destroy image
 	}	
 	
@@ -406,7 +406,7 @@ class EGImage
 	 * @param int $quality
 	 * @return void
 	 */
-	protected function _execute($fileName = null, $quality)
+	protected function _execute($quality, $fileName = null)
 	{
 		$function = 'image'.$this->_format;
 		
@@ -418,16 +418,12 @@ class EGImage
 	 * @return int|null
 	 */
 	protected function _getQuality($quality)
-	{
-		switch($this->_format){
-			case 'gif':
-		        return null;
-			case 'jpeg':
-		        return $quality;
-			case 'png':
-		        return (int)($quality/10 - 1);
-		}
-
-        return null;
-	}
+ {
+     return match ($this->_format) {
+         'gif' => null,
+         'jpeg' => $quality,
+         'png' => (int)($quality/10 - 1),
+         default => null,
+     };
+ }
 }

@@ -1,4 +1,4 @@
-		<h2><?php echo i18n_r($thisfile_DM_Matrix.'/DM_SHOWTABLE') ?></h2>
+<h2><?php echo i18n_r($thisfile_DM_Matrix.'/DM_SHOWTABLE') ?></h2>
 		<table id="editpages" class="tablesorter">
 		<thead>
 			<tr>
@@ -15,7 +15,7 @@
 			$fieldcnt = isset($key['fields']) ? count($key['fields']) : '0';
 			$numRecords=DM_getNumRecords($schema);
 			$maxRecords=$key['maxrecords'];
-			
+
 			//if (substr($schema,0,1)!="_"){
 				$schemaName=$schema;
 				if ($fieldcnt > 1){

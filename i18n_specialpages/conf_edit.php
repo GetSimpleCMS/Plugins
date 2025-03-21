@@ -209,7 +209,7 @@
   while ($filename = readdir($dir_handle)) {
     if (substr($filename,-4) == '.xml' && !is_dir(GSDATAPAGESPATH . $filename)) {
       $data = getXML(GSDATAPAGESPATH . $filename);
-      if ($isi18n && strpos($filename,'_') !== false) {
+      if ($isi18n && str_contains($filename,'_')) {
         $lang = substr($filename, strpos($filename,'_')+1, -4);
         if (!in_array($lang, $languages)) $languages[] = $lang;
       } else {

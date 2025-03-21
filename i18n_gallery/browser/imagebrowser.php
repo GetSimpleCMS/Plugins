@@ -4,7 +4,7 @@
    *
    * Displays and selects file link to insert
    */
-   
+
   function i18n_gallery_exif_text($text, $defEnc=null) {
     if (!$defEnc) $defEnc = 'ISO-8859-15'; 
     if (function_exists('mb_convert_encoding') && function_exists('mb_detect_encoding')) {
@@ -13,7 +13,7 @@
       return $text;
     }
   }
-   
+
   function i18n_gallery_image_info($file, $defEnc=null, $debug=false) {
     $info = array();
     if ($debug) $info['debug'] = '';
@@ -48,7 +48,7 @@
           }
         }
       }
-    } catch (Exception $e) {
+    } catch (Exception) {
       # ignore
     }   
     if (!$debug && count($info) == 4) return $info;
@@ -76,7 +76,7 @@
           $info['author'] = i18n_gallery_exif_text(implode("\r\n", $iptc['2#080']));
         }
       }
-    } catch (Exception $e) {
+    } catch (Exception) {
       # ignore
     }
     if (!$debug && count($info) == 4) return $info;
@@ -107,12 +107,12 @@
           else if (@$exif['IFD0']['Artist']) $info['author'] = i18n_gallery_exif_text($exif['IFD0']['Artist']);
         }
       }
-    } catch (Exception $e) {
+    } catch (Exception) {
       # ignore
     }
     return $info;
   }
-   
+
   include('../../../gsconfig.php');
   $admin = defined('GSADMIN') ? GSADMIN : 'admin';
   include("../../../${admin}/inc/common.php");
@@ -122,7 +122,7 @@
 
   i18n_merge('i18n_gallery',substr($LANG,0,2));
   i18n_merge('i18n_gallery','en');
-  
+
   if (isset($_GET['path'])) {
     $subPath = preg_replace('/\.+\//','',$_GET['path']);
     if ($subPath) $subPath .= '/';

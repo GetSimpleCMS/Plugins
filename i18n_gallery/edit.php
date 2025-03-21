@@ -123,7 +123,7 @@ $settings = i18n_gallery_settings();
 $w = intval(@$settings['adminthumbwidth']) > 0 ? intval($settings['adminthumbwidth']) : I18N_GALLERY_DEFAULT_THUMB_WIDTH;
 $h = intval(@$settings['adminthumbheight']) > 0 ? intval($settings['adminthumbheight']) : I18N_GALLERY_DEFAULT_THUMB_HEIGHT;
 $viewlink = function_exists('find_i18n_url') ? find_i18n_url('index',null) : find_url('index',null);
-$viewlink .= (strpos($viewlink,'?') === false ? '?' : '&amp;') . 'name=' . $name . '&amp;preview-gallery';
+$viewlink .= (!str_contains($viewlink,'?') ? '?' : '&amp;') . 'name=' . $name . '&amp;preview-gallery';
 $plugins = i18n_gallery_plugins();
 $plugins = subval_sort($plugins,'name');
 // default gallery type

@@ -179,7 +179,7 @@ class ItemsManager
 							echo "<option value=\"\">Choose Category..</option>";
 						}
 						$category_file = getXML(ITEMDATAFILE);
-						
+
 						foreach($category_file->categories->category as $the_fed)
 						{
 							if($category == $the_fed)
@@ -204,7 +204,7 @@ class ItemsManager
 				<a href="load.php?id=item_manager" class="cancel" title="Cancel">Cancel</a>
 			</p>
 		</form>
-  <?php
+<?php
 	}
 	
 	public function processItem()

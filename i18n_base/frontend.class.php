@@ -159,7 +159,7 @@ class I18nFrontend {
           preg_match('/^([^\?]*[^\?\/])(\/?(\?.*)?)$/', $u, $match);
           $u = $match[1].I18N_SEPARATOR.$language.@$match[2];
         } else {
-          $u .= (strpos($u,'?') !== false ? '&' : '?') . I18N_LANGUAGE_PARAM . '=' . $language;
+          $u .= (str_contains($u,'?') ? '&' : '?') . I18N_LANGUAGE_PARAM . '=' . $language;
         }
       }
     }
@@ -178,7 +178,7 @@ class I18nFrontend {
       return self::getURL($url,$parent,$language); // no setlang parameter supported for URLs with language
     } else {
       $u = self::getURL($url,$parent);
-      $u .= (strpos($u,'?') !== false ? '&' : '?') . I18N_SET_LANGUAGE_PARAM . '=' . $language;
+      $u .= (str_contains($u,'?') ? '&' : '?') . I18N_SET_LANGUAGE_PARAM . '=' . $language;
       return $u;
     }
   }
@@ -211,7 +211,7 @@ class I18nFrontend {
     }
     $keywords = array();
     $tags = preg_split("/\s*,\s*/", stripslashes(htmlspecialchars_decode($metak, ENT_QUOTES)));
-    if (count($tags) > 0) foreach ($tags as $tag) if (substr(trim($tag),0,1) != '_') $keywords[] = trim($tag);
+    if ($tags && count($tags) > 0) foreach ($tags as $tag) if (substr(trim($tag),0,1) != '_') $keywords[] = trim($tag);
     
     if (!$omit || !in_array('description',$omit)) echo '<meta name="description" content="'.htmlspecialchars(trim($description)).'" />'."\n";
     if (!$omit || !in_array('keywords',$omit)) echo '<meta name="keywords" content="'.htmlspecialchars(implode(', ',$keywords)).'" />'."\n";
@@ -288,7 +288,7 @@ class I18nFrontend {
     $parent = (string) $parent;
     if ($parent && (string) $slug && $slug != 'index') { // no parent for index page
       $plink = str_replace('%parent%', $parent, $plink);
-      if (strpos($plink,'%parents%') !== false) {
+      if (str_contains($plink,'%parents%')) {
         $parents = $parent;
         if (function_exists('return_i18n_pages')) {
           $pages = return_i18n_pages();

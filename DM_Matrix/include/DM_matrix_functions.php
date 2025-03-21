@@ -199,26 +199,14 @@ function updateRecordFromForm($tbl){
 
 
 function DM_manipulate($field, $type){
-	switch ($type){
-		case "datetimepicker":
-			return (int)strtotime($field);
-			break;	
-		case "datepicker":
-			return (int)strtotime($field);
-			break;	
-		case "texteditor":
-			return safe_slash_html($field);
-			break;
-		case "textarea":
-			return safe_slash_html($field);
-			break;
-		case "codeeditor":
-			return safe_slash_html($field);
-			break;
-				
-		default: 
-			return $field;
-	}
+	return match ($type) {
+     "datetimepicker" => (int)strtotime($field),
+     "datepicker" => (int)strtotime($field),
+     "texteditor" => safe_slash_html($field),
+     "textarea" => safe_slash_html($field),
+     "codeeditor" => safe_slash_html($field),
+     default => $field,
+ };
 		
 }
 

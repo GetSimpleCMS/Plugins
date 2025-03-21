@@ -45,7 +45,7 @@
     if (substr($filename,-4) == '.xml' && !is_dir(GSDATAPAGESPATH . $filename)) {
 			$data = getXML(GSDATAPAGESPATH . $filename);
       if ($special == (string) @$data->special) {
-        if ($isi18n && strpos($filename,'_') !== false) {
+        if ($isi18n && str_contains($filename,'_')) {
           $pos = strpos($data->url,'_');
           $url = substr($data->url,0,$pos);
           $lang = substr($data->url,$pos+1);
@@ -77,7 +77,7 @@
           foreach (preg_split('/\s*,\s*/', trim(@$pages[$url]['metak'])) as $t) $tags[':'.$t] = true;
         }
       } else {
-        if ($isi18n && strpos($filename,'_') !== false) {
+        if ($isi18n && str_contains($filename,'_')) {
           $pos = strpos($data->url,'_');
           $lang = substr($data->url,$pos+1);
           if (!in_array($lang,$languages)) $languages[] = $lang;
